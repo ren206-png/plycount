@@ -2,7 +2,6 @@
 
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { safeRedirectPath } from '@/lib/auth/redirect'
@@ -70,12 +69,6 @@ function LoginForm() {
           {isSubmitting ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
-      <p className="mt-4 text-sm text-gray-600">
-        No account?{' '}
-        <Link href="/signup" className="font-medium text-brand-600 hover:underline">
-          Start a pilot
-        </Link>
-      </p>
     </main>
   )
 }
