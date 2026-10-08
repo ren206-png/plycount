@@ -519,6 +519,37 @@ production, and nothing rate-limited any endpoint.
   catches drift like a freshly-disclosed CVE in an otherwise-unchanged
   dependency.
 
+## Security model (hardened 2026-10-08)
+
+Access control lives in Postgres RLS, not in the API routes: the Supabase
+anon key is public, so any logged-in user can call PostgREST directly with
+their own JWT. Rules to preserve when adding tables or policies
+(`supabase/migrations/20261008014_security_hardening.sql`, tested by
+`supabase/tests/security_hardening.test.sql`):
+
+- **A customer-portal login (`client_viewer`, `my_customer_id()` not null)
+  must be excluded from every table by default.** Internal data
+  (`cost_inputs`, `price_books`, `price_book_lines`, `margin_alert_reviews`,
+  the user roster) is staff-only; `products` are readable only where they
+  appear on that customer's own non-draft quotes/orders. When you add a
+  table, add `and public.my_customer_id() is null` to its policies unless
+  portal users are meant to see it.
+- **`user_profiles` is guarded by a trigger** (`guard_user_profile_changes`):
+  nobody but a platform admin can change `auth_user_id`, `organization_id`,
+  `customer_id` or `email`, grant `platform_admin`, or change their own
+  role/status. Portal users are created only by the invite API.
+- **Never make a data-reading function `SECURITY DEFINER` without an
+  explicit org/role check** (it bypasses RLS and is callable by anyone with
+  EXECUTE). The pricing helpers are `SECURITY INVOKER`. Revoke `PUBLIC`
+  execute on any new function and grant only the roles that need it.
+- **Routes that use the organization's own credentials** (emailing quotes,
+  QuickBooks/Xero sync) require a staff role (`isStaffRole`); quote email is
+  also rate limited per org.
+- **Public signup**: turn it off in the Supabase dashboard (Authentication
+  → Sign In / Providers → Email → "Allow new users to sign up") if this is
+  an internal tool, and set the minimum password length to 8 there to match
+  `supabase/config.toml`.
+
 ## Deferred / not built (by design, see strategy doc)
 
 - BOM/manufacturing costing engine — cost is a flat manual entry per SKU

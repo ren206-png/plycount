@@ -17,10 +17,9 @@ export async function GET() {
   const { error } = await admin.from('organizations').select('id').limit(1)
 
   if (error) {
-    return NextResponse.json(
-      { ok: false, database: 'unreachable', error: error.message },
-      { status: 503 }
-    )
+    // Public endpoint: log the detail server-side, never return it.
+    console.error('[health] database check failed:', error.message)
+    return NextResponse.json({ ok: false, database: 'unreachable' }, { status: 503 })
   }
 
   return NextResponse.json({ ok: true, database: 'reachable' })
