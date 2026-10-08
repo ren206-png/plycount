@@ -1,4 +1,5 @@
-import { withSentryConfig } from '@sentry/nextjs'
+// Sentry 11 moved the build-time wrapper to the `/config` subpath.
+import { withSentryConfig } from '@sentry/nextjs/config'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
