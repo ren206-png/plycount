@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
+import { isStaffRole } from '@/lib/auth/roles'
+import { checkRateLimit } from '@/lib/rate-limit/server'
 import { getQuotePdfData } from '@/lib/pdf/getQuotePdfData'
 import { renderQuotePdfBuffer } from '@/lib/pdf/renderQuotePdf'
 
@@ -23,6 +25,29 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 })
+  }
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('organization_id, role')
+    .eq('auth_user_id', user.id)
+    .maybeSingle()
+  if (!profile || !isStaffRole(profile.role)) {
+    return NextResponse.json({ error: 'Only staff can email quotes.' }, { status: 403 })
+  }
+
+  // Emails go out from the organization's own sender address, so cap how
+  // many a single org can trigger per hour.
+  const withinLimit = await checkRateLimit(`quote-send:${profile.organization_id}`, 60, 3600)
+  if (!withinLimit) {
+    return NextResponse.json({ error: 'Too many quotes emailed recently. Try again in a while.' }, { status: 429 })
+  }
+
   const result = await getQuotePdfData(supabase, id)
 
   if ('error' in result) {

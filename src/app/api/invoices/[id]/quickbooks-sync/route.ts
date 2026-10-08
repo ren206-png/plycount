@@ -15,6 +15,7 @@
 import { NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 import { createClient } from '@/lib/supabase/server'
+import { isStaffRole } from '@/lib/auth/roles'
 import {
   getValidAccessToken,
   findOrCreateQboCustomer,
@@ -27,6 +28,24 @@ export const runtime = 'nodejs'
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 })
+  }
+
+  // Syncing uses the organization's own accounting credentials, so it is
+  // staff-only: a customer-portal login can read its invoices but must
+  // never be able to push them into the company's books.
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('auth_user_id', user.id)
+    .maybeSingle()
+  if (!isStaffRole(profile?.role)) {
+    return NextResponse.json({ error: 'Only staff can sync invoices.' }, { status: 403 })
+  }
 
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')

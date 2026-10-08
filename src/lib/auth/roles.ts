@@ -10,6 +10,14 @@ import type { UserRole } from '@/types'
 
 const ADMIN_ROLES: UserRole[] = ['platform_admin', 'organization_owner', 'administrator']
 
+// Staff = anyone who is not a customer-portal login. Portal logins
+// (client_viewer) are read-only by design, so they must never trigger
+// actions that use the organization's own credentials (email sending,
+// QuickBooks/Xero writes).
+export function isStaffRole(role: UserRole | null | undefined): boolean {
+  return !!role && role !== 'client_viewer'
+}
+
 export function isAdminRole(role: UserRole | null | undefined): boolean {
   return !!role && ADMIN_ROLES.includes(role)
 }

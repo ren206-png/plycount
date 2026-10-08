@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { safeRedirectPath } from '@/lib/auth/redirect'
 
 export default function LoginPage() {
   return (
@@ -33,7 +34,7 @@ function LoginForm() {
       return
     }
 
-    router.push(searchParams.get('redirect') || '/dashboard')
+    router.push(safeRedirectPath(searchParams.get('redirect')))
     router.refresh()
   }
 
