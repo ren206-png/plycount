@@ -2,8 +2,18 @@
 import { withSentryConfig } from '@sentry/nextjs/config'
 
 /** @type {import('next').NextConfig} */
+// The app itself (dashboard, portal, login, API) is private: tell search engines
+// not to index it even if something links to it. Only the landing page (/) is public.
+const PRIVATE_PATHS = ['/dashboard/:path*', '/portal/:path*', '/login', '/pending', '/staff/:path*', '/api/:path*']
+
 const nextConfig = {
   reactStrictMode: true,
+  async headers() {
+    return PRIVATE_PATHS.map((source) => ({
+      source,
+      headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+    }))
+  },
 }
 
 // Sentry's build-time wrapper (source map upload, etc.) only does

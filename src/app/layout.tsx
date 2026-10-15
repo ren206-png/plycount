@@ -2,11 +2,14 @@ import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { QueryProvider } from '@/providers/QueryProvider'
 import { AuthProvider } from '@/providers/AuthProvider'
+import { SITE_NAME, SITE_URL } from '@/lib/site'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 
 export const metadata = {
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
   title: {
     default: 'PlyCount — Contract Pricing & Margin Engine for Paper Converters',
     template: '%s | PlyCount',
