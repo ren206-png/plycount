@@ -38,7 +38,7 @@ export interface UserProfile {
   // Set only for `client_viewer` rows — scopes a portal login to the one
   // customer it may see. Null for staff.
   customer_id: string | null
-  status: 'active' | 'invited' | 'suspended' | 'deactivated'
+  status: 'active' | 'invited' | 'pending' | 'suspended' | 'deactivated'
   last_login_at: string | null
   created_at: string
   updated_at: string

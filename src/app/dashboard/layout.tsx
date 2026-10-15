@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
 import { cn } from '@/lib/utils'
+import { hasAccess } from '@/lib/auth/approval'
 
 const NAV = [
   { href: '/dashboard', label: 'Overview' },
@@ -23,7 +24,7 @@ const NAV = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { profile, organization, signOut, isLoading, isClientViewer } = useAuth()
+  const { profile, organization, signOut, isLoading, isClientViewer, isPlatformAdmin } = useAuth()
 
   useEffect(() => {
     // A portal (client_viewer) login should never land on the staff
@@ -32,7 +33,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!isLoading && isClientViewer) {
       router.replace('/portal')
     }
-  }, [isLoading, isClientViewer, router])
+    // Belt and braces: the middleware already sends unapproved accounts to
+    // the waiting screen; this covers a stale client-side session.
+    if (!isLoading && profile && !hasAccess(profile.status)) {
+      router.replace('/pending')
+    }
+  }, [isLoading, isClientViewer, profile, router])
 
   if (isClientViewer) return null
 
@@ -46,7 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </p>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {NAV.map((item) => {
+          {(isPlatformAdmin ? [...NAV, { href: '/dashboard/admin/approvals', label: 'Account approvals' }] : NAV).map((item) => {
             const active = pathname === item.href
             return (
               <Link

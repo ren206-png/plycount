@@ -18,6 +18,10 @@ export function isStaffRole(role: UserRole | null | undefined): boolean {
   return !!role && role !== 'client_viewer'
 }
 
+export function isPlatformAdminRole(role: UserRole | null | undefined): boolean {
+  return role === 'platform_admin'
+}
+
 export function isAdminRole(role: UserRole | null | undefined): boolean {
   return !!role && ADMIN_ROLES.includes(role)
 }

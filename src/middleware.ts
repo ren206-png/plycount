@@ -8,6 +8,7 @@
 // ============================================================
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { hasAccess } from '@/lib/auth/approval'
 
 const PUBLIC_ROUTES = [
   '/',
@@ -18,6 +19,10 @@ const PUBLIC_ROUTES = [
   '/portal/set-password',
   '/api/',
 ]
+
+// Endpoints that must work without an approved session (uptime checks and
+// Stripe's server-to-server webhook, which has no user at all).
+const API_GATE_EXEMPT = ['/api/health', '/api/stripe/webhook']
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
@@ -53,7 +58,41 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (pathname.startsWith('/api/')) {
+  const isApi = pathname.startsWith('/api/')
+
+  // Approval gate ("no approval, no access"). A signed-in account whose
+  // profile is pending/suspended/deactivated gets nothing: API calls are
+  // refused and app pages redirect to the waiting screen. RLS enforces the
+  // same rule in the database; this keeps the app (and the endpoints that
+  // use the organization's own email/accounting credentials) closed too.
+  const gateApplies =
+    !!user &&
+    (isApi
+      ? !API_GATE_EXEMPT.some((p) => pathname === p || pathname.startsWith(p + '/'))
+      : pathname.startsWith('/dashboard') || pathname.startsWith('/portal') || pathname === '/pending')
+
+  if (gateApplies && user) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('status')
+      .eq('auth_user_id', user.id)
+      .maybeSingle()
+
+    // No profile yet = a brand-new signup mid-setup; the app creates it
+    // (as pending) on first load and the next request is gated.
+    if (profile && !hasAccess(profile.status)) {
+      if (isApi) {
+        return NextResponse.json({ error: 'Your account is waiting for approval.' }, { status: 403 })
+      }
+      if (pathname !== '/pending') {
+        return NextResponse.redirect(new URL('/pending', request.url))
+      }
+    } else if (pathname === '/pending') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+  }
+
+  if (isApi) {
     return supabaseResponse
   }
 

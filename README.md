@@ -545,6 +545,15 @@ their own JWT. Rules to preserve when adding tables or policies
 - **Routes that use the organization's own credentials** (emailing quotes,
   QuickBooks/Xero sync) require a staff role (`isStaffRole`); quote email is
   also rate limited per org.
+- **Account approval ("no approval, no access")**: public signup can stay
+  open because every self-service signup starts as `pending`
+  (`create_organization_with_owner`), and a pending account sees and changes
+  nothing. `my_org_id()` returns null unless the profile is `active` (or an
+  `invited` portal login), so every org-scoped RLS policy denies it; the
+  middleware also redirects it to `/pending` and refuses its API calls. Only a
+  `platform_admin` can move a profile out of `pending` (guard trigger +
+  `/dashboard/admin/approvals`, which calls `POST /api/admin/approvals`).
+  Tested by `supabase/tests/account_approval.test.sql`.
 - **Public signup**: turn it off in the Supabase dashboard (Authentication
   → Sign In / Providers → Email → "Allow new users to sign up") if this is
   an internal tool, and set the minimum password length to 8 there to match
