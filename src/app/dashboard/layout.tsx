@@ -6,14 +6,15 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
 import { cn } from '@/lib/utils'
 import { hasAccess } from '@/lib/auth/approval'
-import { APPROVALS_HREF, buildNav } from '@/lib/nav'
+import { APPROVALS_HREF, buildNav, canAccessPath } from '@/lib/nav'
 import { createClient } from '@/lib/supabase/client'
 import { useQuery } from '@tanstack/react-query'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { profile, organization, signOut, isLoading, isClientViewer, isPlatformAdmin } = useAuth()
+  const { profile, organization, signOut, isLoading, isClientViewer, isPlatformAdmin, isOrgAdmin } = useAuth()
+  const flags = { isPlatformAdmin, isOrgAdmin }
 
   useEffect(() => {
     // A portal (client_viewer) login should never land on the staff
@@ -58,7 +59,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </p>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {buildNav(isPlatformAdmin).map((item) => {
+          {buildNav(flags).map((item) => {
             const active = pathname === item.href
             return (
               <Link
@@ -90,7 +91,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
       </aside>
-      <main className="flex-1 overflow-y-auto bg-gray-50 p-8">{children}</main>
+      <main className="flex-1 overflow-y-auto bg-gray-50 p-8">
+        {!isLoading && profile && !canAccessPath(pathname, flags) ? (
+          <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-6 text-center">
+            <h1 className="text-lg font-semibold text-gray-900">No access to this page</h1>
+            <p className="mt-2 text-sm text-gray-600">
+              Your account does not have permission to use this part of PlyCount. Ask the administrator if you need it.
+            </p>
+            <Link href="/dashboard" className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline">
+              Back to the dashboard
+            </Link>
+          </div>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   )
 }

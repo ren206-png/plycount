@@ -5,9 +5,11 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Customer, PriceBook } from '@/types'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/providers/AuthProvider'
 
 export default function PriceBooksPage() {
   const supabase = createClient()
+  const { isOrgAdmin } = useAuth()
 
   const { data: priceBooks, isLoading } = useQuery({
     queryKey: ['price-books'],
@@ -42,9 +44,11 @@ export default function PriceBooksPage() {
             Contract and volume pricing with effective dates — the core of PlyCount.
           </p>
         </div>
-        <Link href="/dashboard/price-books/new">
-          <Button>New price book</Button>
-        </Link>
+        {isOrgAdmin && (
+          <Link href="/dashboard/price-books/new">
+            <Button>New price book</Button>
+          </Link>
+        )}
       </div>
 
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">

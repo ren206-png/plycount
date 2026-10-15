@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
-import type { Customer, Product, PriceBook, Quote, QuoteLine } from '@/types'
+import type { Customer, Product, PriceBook, Quote, QuoteLine, QuoteLineCost } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency, formatPercent, cn, isUUID } from '@/lib/utils'
 import { marginPct } from '@/lib/pricing/resolve'
@@ -22,7 +22,9 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
   const router = useRouter()
   const supabase = createClient()
   const queryClient = useQueryClient()
-  const { organization } = useAuth()
+  const { isOrgAdmin } = useAuth()
+  // Costs and margins are admin-only (they live in a table staff cannot read).
+  const canSeeCosts = isOrgAdmin
   const isValidId = isUUID(params.id)
 
   const { data: quote } = useQuery({
@@ -46,6 +48,19 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
         .order('created_at')
       if (error) throw error
       return data as QuoteLine[]
+    },
+  })
+
+  const { data: costs } = useQuery({
+    queryKey: ['quote-line-costs', params.id],
+    enabled: isValidId && canSeeCosts && !!lines && lines.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('quote_line_costs')
+        .select('*')
+        .in('quote_line_id', (lines ?? []).map((l) => l.id))
+      if (error) throw error
+      return data as QuoteLineCost[]
     },
   })
 
@@ -81,54 +96,27 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
   const skuFor = (id: string) => products?.find((p) => p.id === id)?.sku_code ?? id
 
   const quoteTotal = (lines ?? []).reduce((sum, l) => sum + l.qty * l.unit_price, 0)
-  const totalCost = (lines ?? []).reduce((sum, l) => sum + l.qty * l.unit_cost_snapshot, 0)
+  const costFor = (lineId: string) => costs?.find((c) => c.quote_line_id === lineId)?.unit_cost_snapshot ?? null
+  const totalCost = (lines ?? []).reduce((sum, l) => sum + l.qty * (costFor(l.id) ?? 0), 0)
   const blendedMargin = quoteTotal > 0 ? marginPct(quoteTotal, totalCost) : 0
 
   const convertMutation = useMutation({
     mutationFn: async () => {
       if (!quote || !lines || lines.length === 0) throw new Error('Quote has no lines to convert.')
 
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          organization_id: organization?.id,
-          quote_id: quote.id,
-          customer_id: quote.customer_id,
-          status: 'open',
-        })
-        .select()
-        .single()
-      if (orderError) throw orderError
-
-      const { error: orderLinesError } = await supabase.from('order_lines').insert(
-        lines.map((l) => ({
-          order_id: order.id,
-          product_id: l.product_id,
-          qty: l.qty,
-          unit_price: l.unit_price,
-          unit_cost_snapshot: l.unit_cost_snapshot,
-        }))
-      )
-      if (orderLinesError) throw orderLinesError
-
-      const { error: statusError } = await supabase
-        .from('quotes')
-        .update({ status: 'accepted' })
-        .eq('id', quote.id)
-      if (statusError) throw statusError
-
-      const { error: auditError } = await supabase.rpc('log_quote_conversion', {
+      // One atomic database step: creates the order and its lines, carries the
+      // hidden cost snapshots across, marks the quote accepted and writes the
+      // audit entry. Admin-only (enforced in the database).
+      const { data: orderId, error } = await supabase.rpc('convert_quote_to_order', {
         p_quote_id: quote.id,
-        p_order_id: order.id,
       })
-      if (auditError) throw auditError
-
-      return order
+      if (error) throw error
+      return orderId as string
     },
-    onSuccess: (order) => {
+    onSuccess: (orderId) => {
       toast.success('Quote converted to order')
       queryClient.invalidateQueries({ queryKey: ['quotes', params.id] })
-      router.push(`/dashboard/orders/${order.id}`)
+      router.push(`/dashboard/orders/${orderId}`)
     },
     onError: (err: Error) => toast.error(err.message),
   })
@@ -150,7 +138,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
   if (!isValidId) return <p className="text-gray-500">Quote not found.</p>
   if (!quote) return <p className="text-gray-500">Loading…</p>
 
-  const canConvert = quote.status === 'draft' || quote.status === 'sent'
+  const canConvert = isOrgAdmin && (quote.status === 'draft' || quote.status === 'sent')
 
   return (
     <div className="max-w-4xl">
@@ -183,38 +171,45 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
               <th className="px-4 py-3">SKU</th>
               <th className="px-4 py-3">Qty</th>
               <th className="px-4 py-3">Unit price</th>
-              <th className="px-4 py-3">Unit cost</th>
+              {canSeeCosts && <th className="px-4 py-3">Unit cost</th>}
               <th className="px-4 py-3">Line total</th>
-              <th className="px-4 py-3">Margin</th>
+              {canSeeCosts && <th className="px-4 py-3">Margin</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {!lines?.length && (
-              <tr><td className="px-4 py-6 text-gray-500" colSpan={6}>No lines on this quote.</td></tr>
+              <tr><td className="px-4 py-6 text-gray-500" colSpan={canSeeCosts ? 6 : 4}>No lines on this quote.</td></tr>
             )}
             {lines?.map((l) => {
-              const margin = marginPct(l.unit_price, l.unit_cost_snapshot)
+              const unitCost = costFor(l.id)
+              const margin = unitCost === null ? null : marginPct(l.unit_price, unitCost)
               return (
                 <tr key={l.id}>
                   <td className="px-4 py-3 font-mono text-xs text-gray-700">{skuFor(l.product_id)}</td>
                   <td className="px-4 py-3 text-gray-600">{l.qty}</td>
                   <td className="px-4 py-3 text-gray-600">{formatCurrency(l.unit_price)}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatCurrency(l.unit_cost_snapshot)}</td>
+                  {canSeeCosts && (
+                    <td className="px-4 py-3 text-gray-600">{unitCost === null ? '—' : formatCurrency(unitCost)}</td>
+                  )}
                   <td className="px-4 py-3 font-medium text-gray-900">{formatCurrency(l.qty * l.unit_price)}</td>
-                  <td className={cn('px-4 py-3 font-semibold', margin < 15 ? 'text-red-600' : 'text-green-700')}>
-                    {formatPercent(margin)}
-                  </td>
+                  {canSeeCosts && (
+                    <td className={cn('px-4 py-3 font-semibold', margin !== null && margin < 15 ? 'text-red-600' : 'text-green-700')}>
+                      {margin === null ? '—' : formatPercent(margin)}
+                    </td>
+                  )}
                 </tr>
               )
             })}
           </tbody>
           <tfoot className="border-t border-gray-200 bg-gray-50 font-semibold text-gray-900">
             <tr>
-              <td className="px-4 py-3" colSpan={4}>Total</td>
+              <td className="px-4 py-3" colSpan={canSeeCosts ? 4 : 3}>Total</td>
               <td className="px-4 py-3">{formatCurrency(quoteTotal)}</td>
-              <td className={cn('px-4 py-3', blendedMargin < 15 ? 'text-red-600' : 'text-green-700')}>
-                {formatPercent(blendedMargin)}
-              </td>
+              {canSeeCosts && (
+                <td className={cn('px-4 py-3', blendedMargin < 15 ? 'text-red-600' : 'text-green-700')}>
+                  {formatPercent(blendedMargin)}
+                </td>
+              )}
             </tr>
           </tfoot>
         </table>

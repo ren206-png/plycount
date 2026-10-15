@@ -545,6 +545,17 @@ their own JWT. Rules to preserve when adding tables or policies
 - **Routes that use the organization's own credentials** (emailing quotes,
   QuickBooks/Xero sync) require a staff role (`isStaffRole`); quote email is
   also rate limited per org.
+- **Roles and costs.** Cost and margin never live on rows staff or customers
+  can read: `quote_line_costs` / `order_line_costs` (migration 016) are
+  readable by org admins only and have no write policies; a trigger captures a
+  quote line's cost from `cost_inputs` when the line is created, and
+  `convert_quote_to_order()` (admin-only, atomic) carries it onto the order.
+  Staff (`sales_rep`, "sales basics") can view customers, products, price books
+  and orders and create/edit/email quotes; everything else (costs, margins,
+  prices, orders, invoices, the user roster, billing, integrations, approvals)
+  is admin-only in RLS, mirrored in `src/lib/nav.ts` for the UI and in the
+  API routes. When adding a table or column, ask "may staff / a portal customer
+  see this?" and never put cost or margin on a row they can select.
 - **Bot protection (Cloudflare Turnstile)**: the login and signup forms show a
   Turnstile challenge when `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set and pass the
   token to Supabase as `options.captchaToken`. Verification is done by Supabase

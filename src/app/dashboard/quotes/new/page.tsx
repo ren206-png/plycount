@@ -26,7 +26,9 @@ interface DraftLine {
 export default function NewQuotePage() {
   const router = useRouter()
   const supabase = createClient()
-  const { organization } = useAuth()
+  const { organization, isOrgAdmin } = useAuth()
+  // Only admins can see costs and margins; staff price quotes without them.
+  const canSeeCosts = isOrgAdmin
 
   const [customerId, setCustomerId] = useState('')
   const [priceBookId, setPriceBookId] = useState<string | null>(null)
@@ -86,13 +88,13 @@ export default function NewQuotePage() {
       const product = products?.find((p) => p.id === productId)
       const [resolvedPrice, cost] = await Promise.all([
         resolveUnitPrice(supabase, customerId, productId, qtyNum),
-        getLatestCostInput(supabase, productId),
+        canSeeCosts ? getLatestCostInput(supabase, productId) : Promise.resolve(null),
       ])
 
       if (resolvedPrice === null) {
         toast.warning('No price tier matched this quantity/customer — enter a price manually.')
       }
-      if (!cost) {
+      if (canSeeCosts && !cost) {
         toast.warning('No cost entered for this SKU yet — margin will show as 100% until you add one.')
       }
 
@@ -150,8 +152,7 @@ export default function NewQuotePage() {
           product_id: l.productId,
           qty: l.qty,
           unit_price: l.unitPrice,
-          unit_cost_snapshot: l.unitCostSnapshot,
-          cost_effective_date: l.costEffectiveDate,
+          // Cost is captured by the database when the line is created.
         }))
       )
       if (linesError) throw linesError
@@ -217,9 +218,9 @@ export default function NewQuotePage() {
                 <th className="px-4 py-3">SKU</th>
                 <th className="px-4 py-3">Qty</th>
                 <th className="px-4 py-3">Unit price</th>
-                <th className="px-4 py-3">Unit cost</th>
+                {canSeeCosts && <th className="px-4 py-3">Unit cost</th>}
                 <th className="px-4 py-3">Line total</th>
-                <th className="px-4 py-3">Margin</th>
+                {canSeeCosts && <th className="px-4 py-3">Margin</th>}
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -242,11 +243,13 @@ export default function NewQuotePage() {
                         )}
                       />
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{formatCurrency(l.unitCostSnapshot)}</td>
+                    {canSeeCosts && <td className="px-4 py-3 text-gray-600">{formatCurrency(l.unitCostSnapshot)}</td>}
                     <td className="px-4 py-3 font-medium text-gray-900">{formatCurrency(l.qty * l.unitPrice)}</td>
-                    <td className={cn('px-4 py-3 font-semibold', margin < 15 ? 'text-red-600' : 'text-green-700')}>
-                      {formatPercent(margin)}
-                    </td>
+                    {canSeeCosts && (
+                      <td className={cn('px-4 py-3 font-semibold', margin < 15 ? 'text-red-600' : 'text-green-700')}>
+                        {formatPercent(margin)}
+                      </td>
+                    )}
                     <td className="px-4 py-3 text-right">
                       <button onClick={() => removeLine(l.key)} className="font-medium text-red-600 hover:underline">
                         Remove
@@ -258,11 +261,13 @@ export default function NewQuotePage() {
             </tbody>
             <tfoot className="border-t border-gray-200 bg-gray-50 font-semibold text-gray-900">
               <tr>
-                <td className="px-4 py-3" colSpan={4}>Total</td>
+                <td className="px-4 py-3" colSpan={canSeeCosts ? 4 : 3}>Total</td>
                 <td className="px-4 py-3">{formatCurrency(quoteTotal)}</td>
-                <td className={cn('px-4 py-3', blendedMargin < 15 ? 'text-red-600' : 'text-green-700')}>
-                  {formatPercent(blendedMargin)}
-                </td>
+                {canSeeCosts && (
+                  <td className={cn('px-4 py-3', blendedMargin < 15 ? 'text-red-600' : 'text-green-700')}>
+                    {formatPercent(blendedMargin)}
+                  </td>
+                )}
                 <td />
               </tr>
             </tfoot>

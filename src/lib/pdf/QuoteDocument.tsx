@@ -1,6 +1,6 @@
 // ============================================================
-// Customer-facing quote PDF. Deliberately excludes unit_cost_snapshot
-// and margin_pct — those are internal-only fields on quote_lines.
+// Customer-facing quote PDF. Deliberately excludes cost and margin — those
+// live in the admin-only quote_line_costs table and are never joined here.
 // Rendered server-side only (Node runtime), never in the browser.
 // ============================================================
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'

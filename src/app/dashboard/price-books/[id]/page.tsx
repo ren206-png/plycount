@@ -5,12 +5,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { PriceBook, PriceBookLine, Product } from '@/types'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/providers/AuthProvider'
 import { Input, Label, Select } from '@/components/ui/Input'
 import { formatCurrency, isUUID } from '@/lib/utils'
 import { toast } from 'sonner'
 
 export default function PriceBookDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
+  const { isOrgAdmin } = useAuth()
   const queryClient = useQueryClient()
   const isValidId = isUUID(params.id)
 
@@ -113,40 +115,42 @@ export default function PriceBookDetailPage({ params }: { params: { id: string }
         {priceBook.effective_end ? ` → ${priceBook.effective_end}` : ' (open-ended)'}
       </p>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          addLine.mutate()
-        }}
-        className="mb-8 grid max-w-3xl grid-cols-5 items-end gap-3 rounded-lg border border-gray-200 bg-white p-4"
-      >
-        <div className="col-span-2">
-          <Label>Product</Label>
-          <Select required value={productId} onChange={(e) => setProductId(e.target.value)}>
-            <option value="">Select SKU…</option>
-            {products?.map((p) => (
-              <option key={p.id} value={p.id}>{p.sku_code} — {p.name}</option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <Label>Unit price</Label>
-          <Input required type="number" step="0.0001" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
-        </div>
-        <div>
-          <Label>Min qty</Label>
-          <Input type="number" min={1} value={minQty} onChange={(e) => setMinQty(e.target.value)} />
-        </div>
-        <div>
-          <Label>Max qty (optional)</Label>
-          <Input type="number" value={maxQty} onChange={(e) => setMaxQty(e.target.value)} />
-        </div>
-        <div className="col-span-5">
-          <Button type="submit" disabled={addLine.isPending || !productId}>
-            {addLine.isPending ? 'Adding…' : 'Add tier'}
-          </Button>
-        </div>
-      </form>
+      {isOrgAdmin && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            addLine.mutate()
+          }}
+          className="mb-8 grid max-w-3xl grid-cols-5 items-end gap-3 rounded-lg border border-gray-200 bg-white p-4"
+        >
+          <div className="col-span-2">
+            <Label>Product</Label>
+            <Select required value={productId} onChange={(e) => setProductId(e.target.value)}>
+              <option value="">Select SKU…</option>
+              {products?.map((p) => (
+                <option key={p.id} value={p.id}>{p.sku_code} — {p.name}</option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <Label>Unit price</Label>
+            <Input required type="number" step="0.0001" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
+          </div>
+          <div>
+            <Label>Min qty</Label>
+            <Input type="number" min={1} value={minQty} onChange={(e) => setMinQty(e.target.value)} />
+          </div>
+          <div>
+            <Label>Max qty (optional)</Label>
+            <Input type="number" value={maxQty} onChange={(e) => setMaxQty(e.target.value)} />
+          </div>
+          <div className="col-span-5">
+            <Button type="submit" disabled={addLine.isPending || !productId}>
+              {addLine.isPending ? 'Adding…' : 'Add tier'}
+            </Button>
+          </div>
+        </form>
+      )}
 
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
@@ -171,12 +175,14 @@ export default function PriceBookDetailPage({ params }: { params: { id: string }
                 <td className="px-4 py-3 text-gray-600">{l.min_qty}</td>
                 <td className="px-4 py-3 text-gray-600">{l.max_qty ?? '∞'}</td>
                 <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => removeLine.mutate(l.id)}
-                    className="font-medium text-red-600 hover:underline"
-                  >
-                    Remove
-                  </button>
+                  {isOrgAdmin && (
+                    <button
+                      onClick={() => removeLine.mutate(l.id)}
+                      className="font-medium text-red-600 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Customer, Order } from '@/types'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/providers/AuthProvider'
 import { cn } from '@/lib/utils'
 
 const STATUS_STYLES: Record<string, string> = {
@@ -17,6 +18,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function OrdersPage() {
   const supabase = createClient()
+  const { isOrgAdmin } = useAuth()
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['orders'],
@@ -45,9 +47,11 @@ export default function OrdersPage() {
           <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
           <p className="text-sm text-gray-500">Orders created from accepted quotes. Track fulfillment through to invoicing.</p>
         </div>
-        <Link href="/dashboard/orders/new">
-          <Button>New order</Button>
-        </Link>
+        {isOrgAdmin && (
+          <Link href="/dashboard/orders/new">
+            <Button>New order</Button>
+          </Link>
+        )}
       </div>
 
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
