@@ -1,12 +1,14 @@
 'use client'
 
+import { useParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { ProductForm } from '@/components/products/ProductForm'
 import type { Product } from '@/types'
 import { isUUID } from '@/lib/utils'
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
+export default function EditProductPage() {
+  const params = useParams<{ id: string }>()
   const supabase = createClient()
   const isValidId = isUUID(params.id)
 

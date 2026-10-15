@@ -1,5 +1,6 @@
 'use client'
 
+import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
@@ -10,7 +11,8 @@ import { Input, Label, Select } from '@/components/ui/Input'
 import { formatCurrency, isUUID } from '@/lib/utils'
 import { toast } from 'sonner'
 
-export default function PriceBookDetailPage({ params }: { params: { id: string } }) {
+export default function PriceBookDetailPage() {
+  const params = useParams<{ id: string }>()
   const supabase = createClient()
   const { isOrgAdmin } = useAuth()
   const queryClient = useQueryClient()

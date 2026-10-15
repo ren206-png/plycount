@@ -1,5 +1,6 @@
 'use client'
 
+import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
@@ -11,7 +12,8 @@ import type { Customer, UserProfile } from '@/types'
 import { isUUID } from '@/lib/utils'
 import { toast } from 'sonner'
 
-export default function EditCustomerPage({ params }: { params: { id: string } }) {
+export default function EditCustomerPage() {
+  const params = useParams<{ id: string }>()
   const supabase = createClient()
   const queryClient = useQueryClient()
   const { isOrgAdmin } = useAuth()
