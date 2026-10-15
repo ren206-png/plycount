@@ -556,6 +556,13 @@ their own JWT. Rules to preserve when adding tables or policies
   is admin-only in RLS, mirrored in `src/lib/nav.ts` for the UI and in the
   API routes. When adding a table or column, ask "may staff / a portal customer
   see this?" and never put cost or margin on a row they can select.
+- **Staff request access** (`/staff/join`, linked from the login page): a person
+  signs up, then `request_staff_access(full_name)` (migration 017) files a
+  `sales_rep` profile as `pending` in the factory's organization (the oldest
+  active platform admin's org; the caller cannot choose the org or role). It
+  has no access until the platform admin approves it in Account approvals.
+  The name rides on auth user metadata (`pending_staff_full_name`) so the request
+  survives email confirmation; `AuthProvider` files it on first authenticated load.
 - **Bot protection (Cloudflare Turnstile)**: the login and signup forms show a
   Turnstile challenge when `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set and pass the
   token to Supabase as `options.captchaToken`. Verification is done by Supabase

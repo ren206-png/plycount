@@ -17,6 +17,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import type { UserProfile, Organization } from '@/types'
+import { pendingStaffName, STAFF_JOIN_NAME_KEY } from '@/lib/auth/staff-join'
 
 interface AuthState {
   user: User | null
@@ -86,6 +87,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await supabase.auth.updateUser({
               data: { pending_org_name: null, pending_org_slug: null, pending_full_name: null },
             })
+            const { data: freshProfile } = await supabase
+              .from('user_profiles')
+              .select('*')
+              .eq('auth_user_id', user.id)
+              .maybeSingle()
+            profile = freshProfile
+          }
+        }
+      }
+
+      // Same idea for a staff access request (/staff/join): the person's name was
+      // stashed on user_metadata at sign-up; file the request now that they have
+      // a session. It creates a pending staff profile in the factory's organization.
+      if (!profile) {
+        const staffName = pendingStaffName(user.user_metadata)
+        if (staffName) {
+          const { error: joinError } = await supabase.rpc('request_staff_access', { p_full_name: staffName })
+          if (!joinError) {
+            await supabase.auth.updateUser({ data: { [STAFF_JOIN_NAME_KEY]: null } })
             const { data: freshProfile } = await supabase
               .from('user_profiles')
               .select('*')

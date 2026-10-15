@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isAdminRole, isPlatformAdminRole, isStaffRole } from './roles'
+import { describeRole, isAdminRole, isPlatformAdminRole, isStaffRole } from './roles'
 
 describe('isStaffRole', () => {
   it('treats every non-portal role as staff', () => {
@@ -31,5 +31,13 @@ describe('isPlatformAdminRole', () => {
     expect(isPlatformAdminRole('organization_owner')).toBe(false)
     expect(isPlatformAdminRole('administrator')).toBe(false)
     expect(isPlatformAdminRole(null)).toBe(false)
+  })
+})
+
+describe('describeRole', () => {
+  it('tells the approver what is being asked for', () => {
+    expect(describeRole('sales_rep')).toBe('Staff access request')
+    expect(describeRole('organization_owner')).toBe('New company signup')
+    expect(describeRole(null)).toBe('Account')
   })
 })
