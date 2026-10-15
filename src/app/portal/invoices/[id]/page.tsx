@@ -1,5 +1,6 @@
 'use client'
 
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
@@ -8,7 +9,8 @@ import { formatCurrency, isUUID } from '@/lib/utils'
 
 type PortalOrderLineRef = { id: string; product_id: string }
 
-export default function PortalInvoiceDetailPage({ params }: { params: { id: string } }) {
+export default function PortalInvoiceDetailPage() {
+  const params = useParams<{ id: string }>()
   const supabase = createClient()
   const isValidId = isUUID(params.id)
 

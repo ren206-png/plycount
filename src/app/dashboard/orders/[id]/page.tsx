@@ -1,5 +1,6 @@
 'use client'
 
+import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -18,7 +19,8 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: 'bg-red-100 text-red-700',
 }
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
+export default function OrderDetailPage() {
+  const params = useParams<{ id: string }>()
   const supabase = createClient()
   const queryClient = useQueryClient()
   const { organization, isOrgAdmin } = useAuth()

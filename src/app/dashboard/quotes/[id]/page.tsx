@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
@@ -18,7 +18,8 @@ const STATUS_STYLES: Record<string, string> = {
   expired: 'bg-red-100 text-red-700',
 }
 
-export default function QuoteDetailPage({ params }: { params: { id: string } }) {
+export default function QuoteDetailPage() {
+  const params = useParams<{ id: string }>()
   const router = useRouter()
   const supabase = createClient()
   const queryClient = useQueryClient()

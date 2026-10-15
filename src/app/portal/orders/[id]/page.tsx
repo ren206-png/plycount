@@ -1,5 +1,6 @@
 'use client'
 
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
@@ -16,7 +17,8 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: 'bg-red-100 text-red-700',
 }
 
-export default function PortalOrderDetailPage({ params }: { params: { id: string } }) {
+export default function PortalOrderDetailPage() {
+  const params = useParams<{ id: string }>()
   const supabase = createClient()
   const isValidId = isUUID(params.id)
 
