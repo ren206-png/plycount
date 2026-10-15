@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isAdminRole, isStaffRole } from './roles'
+import { isAdminRole, isPlatformAdminRole, isStaffRole } from './roles'
 
 describe('isStaffRole', () => {
   it('treats every non-portal role as staff', () => {
@@ -22,5 +22,14 @@ describe('isAdminRole', () => {
     expect(isAdminRole('administrator')).toBe(true)
     expect(isAdminRole('sales_rep')).toBe(false)
     expect(isAdminRole('client_viewer')).toBe(false)
+  })
+})
+
+describe('isPlatformAdminRole', () => {
+  it('is true only for platform_admin', () => {
+    expect(isPlatformAdminRole('platform_admin')).toBe(true)
+    expect(isPlatformAdminRole('organization_owner')).toBe(false)
+    expect(isPlatformAdminRole('administrator')).toBe(false)
+    expect(isPlatformAdminRole(null)).toBe(false)
   })
 })
