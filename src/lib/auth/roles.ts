@@ -22,6 +22,24 @@ export function isPlatformAdminRole(role: UserRole | null | undefined): boolean 
   return role === 'platform_admin'
 }
 
+// What an account is asking for, in words the approver recognizes.
+export function describeRole(role: UserRole | null | undefined): string {
+  switch (role) {
+    case 'sales_rep':
+      return 'Staff access request'
+    case 'organization_owner':
+      return 'New company signup'
+    case 'administrator':
+      return 'Administrator'
+    case 'platform_admin':
+      return 'Platform administrator'
+    case 'client_viewer':
+      return 'Customer portal'
+    default:
+      return 'Account'
+  }
+}
+
 export function isAdminRole(role: UserRole | null | undefined): boolean {
   return !!role && ADMIN_ROLES.includes(role)
 }

@@ -6,11 +6,14 @@ import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
 import { Button } from '@/components/ui/Button'
+import { describeRole } from '@/lib/auth/roles'
+import type { UserRole } from '@/types'
 
 interface PendingAccount {
   id: string
   email: string
   full_name: string
+  role: UserRole
   organization_id: string
   created_at: string
   company: string
@@ -28,7 +31,7 @@ export default function AccountApprovalsPage() {
     queryFn: async () => {
       const { data: profiles, error } = await supabase
         .from('user_profiles')
-        .select('id, email, full_name, organization_id, created_at')
+        .select('id, email, full_name, role, organization_id, created_at')
         .eq('status', 'pending')
         .order('created_at', { ascending: true })
       if (error) throw error
@@ -82,7 +85,12 @@ export default function AccountApprovalsPage() {
         {(accounts ?? []).map((a) => (
           <div key={a.id} className="flex items-center justify-between gap-4 p-4">
             <div className="min-w-0">
-              <p className="truncate font-medium text-gray-900">{a.full_name}</p>
+              <p className="truncate font-medium text-gray-900">
+                {a.full_name}
+                <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                  {describeRole(a.role)}
+                </span>
+              </p>
               <p className="truncate text-sm text-gray-600">{a.email}</p>
               <p className="truncate text-xs text-gray-500">
                 {a.company} · signed up {new Date(a.created_at).toLocaleString()}

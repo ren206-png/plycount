@@ -28,7 +28,9 @@ export default function PendingApprovalPage() {
       <p className="mt-3 text-gray-600">
         {blocked
           ? 'This account does not have access. Contact the PlyCount administrator if you think this is a mistake.'
-          : 'Your account has been created. Access opens as soon as the PlyCount administrator approves it.'}
+          : profile?.role === 'sales_rep'
+            ? 'Your staff access request has been sent. You can use PlyCount as soon as the administrator approves it.'
+            : 'Your account has been created. Access opens as soon as the PlyCount administrator approves it.'}
       </p>
       {user?.email && <p className="mt-2 text-sm text-gray-500">Signed in as {user.email}</p>}
       <div className="mt-6 flex justify-center gap-3">

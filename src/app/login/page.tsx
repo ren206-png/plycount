@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useState } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -81,6 +82,12 @@ function LoginForm() {
           {isSubmitting ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
+      <p className="mt-4 text-sm text-gray-600">
+        Factory staff?{' '}
+        <Link href="/staff/join" className="font-medium text-brand-600 hover:underline">
+          Request access
+        </Link>
+      </p>
     </main>
   )
 }
