@@ -5,9 +5,11 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Product } from '@/types'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/providers/AuthProvider'
 
 export default function ProductsPage() {
   const supabase = createClient()
+  const { isOrgAdmin } = useAuth()
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
@@ -27,9 +29,11 @@ export default function ProductsPage() {
             Finished-good SKUs with the paper-specific variant matrix — ply, GSM, roll length, sheet count, case pack.
           </p>
         </div>
-        <Link href="/dashboard/products/new">
-          <Button>New SKU</Button>
-        </Link>
+        {isOrgAdmin && (
+          <Link href="/dashboard/products/new">
+            <Button>New SKU</Button>
+          </Link>
+        )}
       </div>
 
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -65,9 +69,11 @@ export default function ProductsPage() {
                 <td className="px-4 py-3 text-gray-600">{p.case_pack_qty ?? '—'}</td>
                 <td className="px-4 py-3 capitalize text-gray-600">{p.unit_of_measure}</td>
                 <td className="px-4 py-3 text-right">
-                  <Link href={`/dashboard/products/${p.id}`} className="font-medium text-brand-600 hover:underline">
-                    Edit
-                  </Link>
+                  {isOrgAdmin && (
+                    <Link href={`/dashboard/products/${p.id}`} className="font-medium text-brand-600 hover:underline">
+                      Edit
+                    </Link>
+                  )}
                 </td>
               </tr>
             ))}

@@ -21,7 +21,7 @@ const STATUS_STYLES: Record<string, string> = {
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
   const queryClient = useQueryClient()
-  const { organization } = useAuth()
+  const { organization, isOrgAdmin } = useAuth()
 
   const [editedQty, setEditedQty] = useState<Record<string, string>>({})
   const isValidId = isUUID(params.id)
@@ -271,23 +271,26 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                       max={l.qty}
                       value={draftValue}
                       onChange={(e) => setEditedQty((prev) => ({ ...prev, [l.id]: e.target.value }))}
-                      className="w-20 rounded border border-gray-300 px-2 py-1 text-sm"
+                      disabled={!isOrgAdmin}
+                      className="w-20 rounded border border-gray-300 px-2 py-1 text-sm disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </td>
                   <td className="px-4 py-3 text-gray-600">{invoiced}</td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() =>
-                        updateFulfillment.mutate({
-                          lineId: l.id,
-                          qty: Math.max(0, Math.min(l.qty, Number(draftValue) || 0)),
-                        })
-                      }
-                      className="font-medium text-brand-600 hover:underline"
-                      disabled={updateFulfillment.isPending}
-                    >
-                      Save
-                    </button>
+                    {isOrgAdmin && (
+                      <button
+                        onClick={() =>
+                          updateFulfillment.mutate({
+                            lineId: l.id,
+                            qty: Math.max(0, Math.min(l.qty, Number(draftValue) || 0)),
+                          })
+                        }
+                        className="font-medium text-brand-600 hover:underline"
+                        disabled={updateFulfillment.isPending}
+                      >
+                        Save
+                      </button>
+                    )}
                   </td>
                 </tr>
               )
@@ -296,72 +299,76 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         </table>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-3">
-        {order.status === 'open' && (
-          <Button variant="secondary" onClick={() => setStatus.mutate('fulfilling')} disabled={setStatus.isPending}>
-            Mark fulfilling
+      {isOrgAdmin && (
+        <div className="mb-6 flex flex-wrap gap-3">
+          {order.status === 'open' && (
+            <Button variant="secondary" onClick={() => setStatus.mutate('fulfilling')} disabled={setStatus.isPending}>
+              Mark fulfilling
+            </Button>
+          )}
+          {order.status !== 'fulfilled' && order.status !== 'invoiced' && order.status !== 'cancelled' && allFulfilled && (
+            <Button variant="secondary" onClick={() => setStatus.mutate('fulfilled')} disabled={setStatus.isPending}>
+              Mark fulfilled
+            </Button>
+          )}
+          <Button onClick={() => createInvoice.mutate()} disabled={createInvoice.isPending || !anyUnbilled}>
+            {createInvoice.isPending ? 'Creating…' : 'Create draft invoice for fulfilled qty'}
           </Button>
-        )}
-        {order.status !== 'fulfilled' && order.status !== 'invoiced' && order.status !== 'cancelled' && allFulfilled && (
-          <Button variant="secondary" onClick={() => setStatus.mutate('fulfilled')} disabled={setStatus.isPending}>
-            Mark fulfilled
-          </Button>
-        )}
-        <Button onClick={() => createInvoice.mutate()} disabled={createInvoice.isPending || !anyUnbilled}>
-          {createInvoice.isPending ? 'Creating…' : 'Create draft invoice for fulfilled qty'}
-        </Button>
-      </div>
-
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-        <div className="border-b border-gray-200 px-4 py-3">
-          <h2 className="font-semibold text-gray-900">Invoices</h2>
         </div>
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
-            <tr>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Total</th>
-              <th className="px-4 py-3">Created</th>
-              <th className="px-4 py-3">Accounting</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {!invoices?.length && (
-              <tr><td className="px-4 py-6 text-gray-500" colSpan={4}>No invoices yet.</td></tr>
-            )}
-            {invoices?.map((i) => (
-              <tr key={i.id}>
-                <td className="px-4 py-3 capitalize text-gray-700">{i.status}</td>
-                <td className="px-4 py-3 font-medium text-gray-900">{formatCurrency(i.total_amount)}</td>
-                <td className="px-4 py-3 text-gray-600">{new Date(i.created_at).toLocaleDateString()}</td>
-                <td className="px-4 py-3 text-gray-500">
-                  {i.external_ref ? (
-                    `Synced (${i.external_ref})`
-                  ) : qboStatus?.connected ? (
-                    <button
-                      onClick={() => syncToQuickbooks.mutate(i.id)}
-                      disabled={syncToQuickbooks.isPending}
-                      className="font-medium text-brand-600 hover:underline disabled:opacity-50"
-                    >
-                      {syncToQuickbooks.isPending ? 'Syncing…' : 'Sync to QuickBooks'}
-                    </button>
-                  ) : xeroStatus?.connected ? (
-                    <button
-                      onClick={() => syncToXero.mutate(i.id)}
-                      disabled={syncToXero.isPending}
-                      className="font-medium text-brand-600 hover:underline disabled:opacity-50"
-                    >
-                      {syncToXero.isPending ? 'Syncing…' : 'Sync to Xero'}
-                    </button>
-                  ) : (
-                    '— (not connected)'
-                  )}
-                </td>
+      )}
+
+      {isOrgAdmin && (
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="border-b border-gray-200 px-4 py-3">
+            <h2 className="font-semibold text-gray-900">Invoices</h2>
+          </div>
+          <table className="min-w-full divide-y divide-gray-200 text-sm">
+            <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+              <tr>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Total</th>
+                <th className="px-4 py-3">Created</th>
+                <th className="px-4 py-3">Accounting</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {!invoices?.length && (
+                <tr><td className="px-4 py-6 text-gray-500" colSpan={4}>No invoices yet.</td></tr>
+              )}
+              {invoices?.map((i) => (
+                <tr key={i.id}>
+                  <td className="px-4 py-3 capitalize text-gray-700">{i.status}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">{formatCurrency(i.total_amount)}</td>
+                  <td className="px-4 py-3 text-gray-600">{new Date(i.created_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {i.external_ref ? (
+                      `Synced (${i.external_ref})`
+                    ) : qboStatus?.connected ? (
+                      <button
+                        onClick={() => syncToQuickbooks.mutate(i.id)}
+                        disabled={syncToQuickbooks.isPending}
+                        className="font-medium text-brand-600 hover:underline disabled:opacity-50"
+                      >
+                        {syncToQuickbooks.isPending ? 'Syncing…' : 'Sync to QuickBooks'}
+                      </button>
+                    ) : xeroStatus?.connected ? (
+                      <button
+                        onClick={() => syncToXero.mutate(i.id)}
+                        disabled={syncToXero.isPending}
+                        className="font-medium text-brand-600 hover:underline disabled:opacity-50"
+                      >
+                        {syncToXero.isPending ? 'Syncing…' : 'Sync to Xero'}
+                      </button>
+                    ) : (
+                      '— (not connected)'
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

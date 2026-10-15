@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
-import type { Customer, Order, OrderLine, Product } from '@/types'
+import type { Customer, Order, OrderLine, OrderLineCost, Product } from '@/types'
 import { formatCurrency, formatPercent, cn } from '@/lib/utils'
 import { marginPct } from '@/lib/pricing/resolve'
 import { rollUp } from '@/lib/margin/rollup'
@@ -32,6 +32,15 @@ export default function MarginDashboardPage() {
     },
   })
 
+  const { data: lineCosts } = useQuery({
+    queryKey: ['all-order-line-costs'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('order_line_costs').select('*')
+      if (error) throw error
+      return data as OrderLineCost[]
+    },
+  })
+
   const { data: products } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
@@ -51,6 +60,11 @@ export default function MarginDashboardPage() {
   })
 
   const skuFor = (id: string) => products?.find((p) => p.id === id)?.sku_code ?? id
+  const costByLine = useMemo(
+    () => new Map((lineCosts ?? []).map((c) => [c.order_line_id, c.unit_cost_snapshot ?? 0])),
+    [lineCosts]
+  )
+  const unitCostFor = (lineId: string) => costByLine.get(lineId) ?? 0
   const orderFor = (id: string) => orders?.find((o) => o.id === id)
   const customerNameForOrder = (orderId: string) => {
     const order = orderFor(orderId)
@@ -64,11 +78,11 @@ export default function MarginDashboardPage() {
       orderLines.map((l) => ({
         label: skuFor(l.product_id),
         revenue: l.qty * l.unit_price,
-        cost: l.qty * l.unit_cost_snapshot,
+        cost: l.qty * unitCostFor(l.id),
       }))
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderLines, products])
+  }, [orderLines, products, costByLine])
 
   const byCustomer = useMemo(() => {
     if (!orderLines) return []
@@ -76,14 +90,14 @@ export default function MarginDashboardPage() {
       orderLines.map((l) => ({
         label: customerNameForOrder(l.order_id),
         revenue: l.qty * l.unit_price,
-        cost: l.qty * l.unit_cost_snapshot,
+        cost: l.qty * unitCostFor(l.id),
       }))
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderLines, orders, customers])
+  }, [orderLines, orders, customers, costByLine])
 
   const totalRevenue = (orderLines ?? []).reduce((sum, l) => sum + l.qty * l.unit_price, 0)
-  const totalCost = (orderLines ?? []).reduce((sum, l) => sum + l.qty * l.unit_cost_snapshot, 0)
+  const totalCost = (orderLines ?? []).reduce((sum, l) => sum + l.qty * unitCostFor(l.id), 0)
   const overallMargin = totalRevenue > 0 ? marginPct(totalRevenue, totalCost) : 0
 
   return (

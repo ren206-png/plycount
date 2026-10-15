@@ -6,6 +6,7 @@
 // ============================================================
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { isAdminRole } from '@/lib/auth/roles'
 import { getStripe } from '@/lib/stripe/server'
 
 export const runtime = 'nodejs'
@@ -28,12 +29,15 @@ export async function POST(req: NextRequest) {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('organization_id')
+    .select('organization_id, role')
     .eq('auth_user_id', user.id)
     .maybeSingle()
 
   if (!profile) {
     return NextResponse.json({ error: 'No organization found for this user.' }, { status: 404 })
+  }
+  if (!isAdminRole(profile.role)) {
+    return NextResponse.json({ error: 'Only an administrator can manage billing.' }, { status: 403 })
   }
 
   const { data: org, error: orgError } = await supabase

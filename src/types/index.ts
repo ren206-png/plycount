@@ -175,10 +175,15 @@ export interface QuoteLine {
   product_id: string
   qty: number
   unit_price: number
-  unit_cost_snapshot: number
-  cost_effective_date: string | null
-  margin_pct: number
   created_at: string
+}
+
+// Cost lives in its own admin-only table (see migration 016): staff and
+// portal logins can read a quote line but never its cost or margin.
+export interface QuoteLineCost {
+  quote_line_id: string
+  unit_cost_snapshot: number | null
+  cost_effective_date: string | null
 }
 
 export type OrderStatus = 'open' | 'fulfilling' | 'fulfilled' | 'invoiced' | 'cancelled'
@@ -199,10 +204,14 @@ export interface OrderLine {
   product_id: string
   qty: number
   unit_price: number
-  unit_cost_snapshot: number
   fulfilled_qty: number
   created_at: string
   updated_at: string
+}
+
+export interface OrderLineCost {
+  order_line_id: string
+  unit_cost_snapshot: number | null
 }
 
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'void'

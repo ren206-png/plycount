@@ -5,9 +5,11 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Customer } from '@/types'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/providers/AuthProvider'
 
 export default function CustomersPage() {
   const supabase = createClient()
+  const { isOrgAdmin } = useAuth()
 
   const { data: customers, isLoading } = useQuery({
     queryKey: ['customers'],
@@ -28,9 +30,11 @@ export default function CustomersPage() {
           <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
           <p className="text-sm text-gray-500">Distributors, institutions, and wholesalers you sell to.</p>
         </div>
-        <Link href="/dashboard/customers/new">
-          <Button>New customer</Button>
-        </Link>
+        {isOrgAdmin && (
+          <Link href="/dashboard/customers/new">
+            <Button>New customer</Button>
+          </Link>
+        )}
       </div>
 
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -64,9 +68,11 @@ export default function CustomersPage() {
                 <td className="px-4 py-3 text-gray-600">{c.contact_name ?? '—'}</td>
                 <td className="px-4 py-3 text-gray-600">{c.credit_terms ?? '—'}</td>
                 <td className="px-4 py-3 text-right">
-                  <Link href={`/dashboard/customers/${c.id}`} className="font-medium text-brand-600 hover:underline">
-                    Edit
-                  </Link>
+                  {isOrgAdmin && (
+                    <Link href={`/dashboard/customers/${c.id}`} className="font-medium text-brand-600 hover:underline">
+                      Edit
+                    </Link>
+                  )}
                 </td>
               </tr>
             ))}
