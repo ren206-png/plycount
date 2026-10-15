@@ -6,20 +6,9 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
 import { cn } from '@/lib/utils'
 import { hasAccess } from '@/lib/auth/approval'
-
-const NAV = [
-  { href: '/dashboard', label: 'Overview' },
-  { href: '/dashboard/customers', label: 'Customers' },
-  { href: '/dashboard/products', label: 'Products (SKUs)' },
-  { href: '/dashboard/cost-inputs', label: 'Cost Inputs' },
-  { href: '/dashboard/price-books', label: 'Price Books' },
-  { href: '/dashboard/quotes', label: 'Quotes' },
-  { href: '/dashboard/orders', label: 'Orders' },
-  { href: '/dashboard/margin-alerts', label: 'Margin Alerts' },
-  { href: '/dashboard/margin', label: 'Margin Dashboard' },
-  { href: '/dashboard/settings/billing', label: 'Billing' },
-  { href: '/dashboard/settings/integrations', label: 'Integrations' },
-]
+import { APPROVALS_HREF, buildNav } from '@/lib/nav'
+import { createClient } from '@/lib/supabase/client'
+import { useQuery } from '@tanstack/react-query'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -40,6 +29,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [isLoading, isClientViewer, profile, router])
 
+  const supabase = createClient()
+
+  // Badge: how many signups are waiting for the platform admin.
+  const { data: pendingCount } = useQuery({
+    queryKey: ['pending-accounts-count'],
+    enabled: isPlatformAdmin,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('user_profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+      if (error) throw error
+      return count ?? 0
+    },
+  })
+
   if (isClientViewer) return null
 
   return (
@@ -52,18 +58,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </p>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {(isPlatformAdmin ? [...NAV, { href: '/dashboard/admin/approvals', label: 'Account approvals' }] : NAV).map((item) => {
+          {buildNav(isPlatformAdmin).map((item) => {
             const active = pathname === item.href
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'block rounded-md px-3 py-2 text-sm font-medium',
+                  'flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium',
                   active ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:bg-gray-100'
                 )}
               >
-                {item.label}
+                <span>{item.label}</span>
+                {item.href === APPROVALS_HREF && (pendingCount ?? 0) > 0 && (
+                  <span className="ml-2 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white">
+                    {pendingCount}
+                  </span>
+                )}
               </Link>
             )
           })}
