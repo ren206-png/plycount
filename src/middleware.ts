@@ -9,6 +9,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { hasAccess } from '@/lib/auth/approval'
+import { isPublicSeoPath } from '@/lib/public-seo-paths'
 
 const PUBLIC_ROUTES = [
   '/',
@@ -31,6 +32,7 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon') ||
+    isPublicSeoPath(pathname) ||
     /\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$/.test(pathname)
   ) {
     return NextResponse.next()
@@ -113,5 +115,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // robots.txt, sitemap.xml and the social images are public and skip the gate entirely.
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|opengraph-image|twitter-image).*)'],
 }
