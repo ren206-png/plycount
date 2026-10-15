@@ -13,7 +13,7 @@ import { useQuery } from '@tanstack/react-query'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { profile, organization, signOut, isLoading, isClientViewer, isPlatformAdmin, isOrgAdmin } = useAuth()
+  const { profile, organization, signOut, isSigningOut, isLoading, isClientViewer, isPlatformAdmin, isOrgAdmin } = useAuth()
   const flags = { isPlatformAdmin, isOrgAdmin }
 
   useEffect(() => {
@@ -85,9 +85,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <p className="truncate text-xs text-gray-500">{profile?.role}</p>
           <button
             onClick={() => signOut()}
-            className="mt-2 text-xs font-medium text-gray-500 hover:text-gray-800"
+            disabled={isSigningOut}
+            className="mt-2 text-xs font-medium text-gray-500 hover:text-gray-800 disabled:opacity-60"
           >
-            Sign out
+            {isSigningOut ? 'Signing out…' : 'Sign out'}
           </button>
         </div>
       </aside>

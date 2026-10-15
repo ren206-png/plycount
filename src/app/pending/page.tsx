@@ -8,7 +8,7 @@ import { hasAccess } from '@/lib/auth/approval'
 
 export default function PendingApprovalPage() {
   const router = useRouter()
-  const { profile, user, isLoading, signOut, refreshProfile } = useAuth()
+  const { profile, user, isLoading, signOut, isSigningOut, refreshProfile } = useAuth()
 
   // If the account gets approved while this page is open, move on.
   useEffect(() => {
@@ -39,8 +39,8 @@ export default function PendingApprovalPage() {
             Check again
           </Button>
         )}
-        <Button variant="ghost" onClick={() => signOut()}>
-          Sign out
+        <Button variant="ghost" onClick={() => signOut()} disabled={isSigningOut}>
+          {isSigningOut ? 'Signing out…' : 'Sign out'}
         </Button>
       </div>
     </main>
