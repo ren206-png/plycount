@@ -10,6 +10,15 @@ updates:
           - "minor"
           - "patch"
     open-pull-requests-limit: 10
+    # `typescript` and `typescript7` are a deliberate side-by-side pair (see the
+    # README "TypeScript" note): `typescript` is Microsoft's TS 6 package under
+    # the usual name so typescript-eslint, Next and knip keep working, and
+    # `typescript7` provides the TS 7 compiler used by `npm run type-check`.
+    # Dependabot cannot update an alias safely, so they are bumped by hand until
+    # typescript-eslint supports TypeScript 7.
+    ignore:
+      - dependency-name: "typescript"
+      - dependency-name: "typescript7"
 
   - package-ecosystem: "github-actions"
     directory: "/"

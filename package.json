@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "type-check": "tsc --noEmit",
+    "type-check": "node ./node_modules/typescript7/bin/tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "knip": "knip"
@@ -38,7 +38,8 @@
     "knip": "^6.41.0",
     "postcss": "^8.5.29",
     "tailwindcss": "^4.3.3",
-    "typescript": "5.9.3",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "typescript7": "npm:typescript@7.0.2",
     "vitest": "^5.0.3"
   },
   "overrides": {

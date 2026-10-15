@@ -594,6 +594,20 @@ their own JWT. Rules to preserve when adding tables or policies
 - Portal write access (approving quotes, paying invoices online) — the
   portal is intentionally read-only for now
 
+## TypeScript (7 for type-checking, 6 for the tooling)
+
+`npm run type-check` runs **TypeScript 7** (`typescript7`, the native compiler).
+`typescript-eslint` does not support TypeScript 7 yet (its peer range stops at
+6.0), so the usual `typescript` name points at Microsoft's
+`@typescript/typescript6` package, the interface the linter, Next.js and knip
+use. Both come from the TypeScript team (the documented side-by-side setup) and
+are build-time only: no TypeScript code ships in the app. `.bin/tsc` still
+resolves to the old compiler, which is why `type-check` calls
+`node_modules/typescript7/bin/tsc` explicitly. Dependabot ignores both
+packages; bump them by hand. **When `typescript-eslint` adds TypeScript 7
+support**, delete the `typescript7` entry, set `typescript` to the real `7.x`,
+and switch `type-check` back to `tsc --noEmit`.
+
 ## Project conventions
 
 Supabase client/server helper patterns, middleware, and RLS helper function
