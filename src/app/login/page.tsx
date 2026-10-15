@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { safeRedirectPath } from '@/lib/auth/redirect'
+import { TurnstileWidget } from '@/components/TurnstileWidget'
+import { captchaOptions, captchaRequired } from '@/lib/turnstile'
 
 export default function LoginPage() {
   return (
@@ -20,16 +22,25 @@ function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaReset, setCaptchaReset] = useState(0)
+  const captchaReady = !captchaRequired() || !!captchaToken
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setIsSubmitting(true)
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: captchaOptions(captchaToken),
+    })
     setIsSubmitting(false)
 
     if (error) {
       toast.error(error.message)
+      // Captcha tokens are single-use: ask for a fresh challenge before a retry.
+      setCaptchaReset((n) => n + 1)
       return
     }
 
@@ -61,9 +72,10 @@ function LoginForm() {
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
+        <TurnstileWidget onToken={setCaptchaToken} resetSignal={captchaReset} />
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !captchaReady}
           className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {isSubmitting ? 'Signing in…' : 'Sign in'}

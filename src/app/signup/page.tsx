@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { TurnstileWidget } from '@/components/TurnstileWidget'
+import { captchaOptions, captchaRequired } from '@/lib/turnstile'
 
 function slugify(name: string) {
   return name
@@ -22,6 +24,9 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaReset, setCaptchaReset] = useState(0)
+  const captchaReady = !captchaRequired() || !!captchaToken
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -39,6 +44,7 @@ export default function SignupPage() {
       email,
       password,
       options: {
+        ...captchaOptions(captchaToken),
         data: {
           pending_org_name: orgName,
           pending_org_slug: slugify(orgName),
@@ -50,6 +56,8 @@ export default function SignupPage() {
     if (signUpError || !signUpData.user) {
       toast.error(signUpError?.message ?? 'Sign up failed')
       setIsSubmitting(false)
+      // Captcha tokens are single-use: ask for a fresh challenge before a retry.
+      setCaptchaReset((n) => n + 1)
       return
     }
 
@@ -126,9 +134,10 @@ export default function SignupPage() {
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
+        <TurnstileWidget onToken={setCaptchaToken} resetSignal={captchaReset} />
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !captchaReady}
           className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {isSubmitting ? 'Creating account…' : 'Create account'}

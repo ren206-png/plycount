@@ -556,6 +556,14 @@ their own JWT. Rules to preserve when adding tables or policies
   is admin-only in RLS, mirrored in `src/lib/nav.ts` for the UI and in the
   API routes. When adding a table or column, ask "may staff / a portal customer
   see this?" and never put cost or margin on a row they can select.
+- **Bot protection (Cloudflare Turnstile)**: the login and signup forms show a
+  Turnstile challenge when `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set and pass the
+  token to Supabase as `options.captchaToken`. Verification is done by Supabase
+  (Authentication -> Attack Protection -> CAPTCHA protection, using the Turnstile
+  *secret* key, which never lives in this app). Set the site key and deploy
+  BEFORE turning CAPTCHA on in Supabase, or sign-in is refused. Cloudflare's test
+  keys (site `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`)
+  always pass, for local testing.
 - **Account approval ("no approval, no access")**: public signup can stay
   open because every self-service signup starts as `pending`
   (`create_organization_with_owner`), and a pending account sees and changes
