@@ -4,7 +4,7 @@ import { withSentryConfig } from '@sentry/nextjs/config'
 /** @type {import('next').NextConfig} */
 // The app itself (dashboard, portal, login, API) is private: tell search engines
 // not to index it even if something links to it. Only the landing page (/) is public.
-const PRIVATE_PATHS = ['/dashboard/:path*', '/portal/:path*', '/login', '/pending', '/staff/:path*', '/api/:path*']
+const PRIVATE_PATHS = ['/dashboard/:path*', '/portal/:path*', '/login', '/signup', '/forgot-password', '/reset-password', '/pending', '/staff/:path*', '/api/:path*']
 
 const nextConfig = {
   reactStrictMode: true,

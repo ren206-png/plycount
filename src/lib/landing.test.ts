@@ -96,7 +96,7 @@ describe('crawler files', () => {
     const r = robots()
     const rule = Array.isArray(r.rules) ? r.rules[0] : r.rules
     const disallow = ([] as string[]).concat(rule.disallow ?? [])
-    for (const p of ['/dashboard', '/portal', '/api/', '/login', '/pending', '/staff/']) {
+    for (const p of ['/dashboard', '/portal', '/api/', '/login', '/signup', '/forgot-password', '/reset-password', '/pending', '/staff/']) {
       expect(disallow).toContain(p)
     }
     expect(rule.allow).toBe('/')
