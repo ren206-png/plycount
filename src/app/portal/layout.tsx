@@ -16,7 +16,7 @@ const NAV = [
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { profile, organization, signOut, isLoading, isClientViewer } = useAuth()
+  const { profile, organization, signOut, isSigningOut, isLoading, isClientViewer } = useAuth()
 
   useEffect(() => {
     // Staff shouldn't land in the portal — send them to the real dashboard.
@@ -53,8 +53,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         </nav>
         <div className="border-t border-gray-200 px-5 py-4">
           <p className="truncate text-sm font-medium text-gray-900">{profile?.full_name}</p>
-          <button onClick={() => signOut()} className="mt-2 text-xs font-medium text-gray-500 hover:text-gray-800">
-            Sign out
+          <button
+            onClick={() => signOut()}
+            disabled={isSigningOut}
+            className="mt-2 text-xs font-medium text-gray-500 hover:text-gray-800 disabled:opacity-60"
+          >
+            {isSigningOut ? 'Signing out…' : 'Sign out'}
           </button>
         </div>
       </aside>

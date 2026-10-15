@@ -32,6 +32,7 @@ interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
+  isSigningOut: boolean
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -179,14 +180,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [supabase, loadProfileAndOrg])
 
+  const [isSigningOut, setIsSigningOut] = useState(false)
+
   const signOut = useCallback(async () => {
-    // End the session, then do a full page load of /login so the user is never
-    // left looking at a protected page (see lib/auth/sign-out.ts).
+    // Ignore repeat clicks, and show "Signing out…" straight away: the request
+    // takes a moment and a button that seems to do nothing invites a second click.
+    if (isSigningOut) return
+    setIsSigningOut(true)
+    // Server ends the session and clears the cookies, the browser drops its copy,
+    // then a full page load of /login (see lib/auth/sign-out.ts).
     await signOutAndLeave(supabase, (url) => window.location.assign(url))
-  }, [supabase])
+  }, [supabase, isSigningOut])
 
   return (
-    <AuthContext.Provider value={{ ...state, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ ...state, isSigningOut, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )
