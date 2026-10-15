@@ -19,3 +19,25 @@
 body {
   font-family: var(--font-inter);
 }
+
+/* Tailwind v4's preflight stopped giving buttons a pointer cursor (it uses the
+   default arrow), so every button in the app looked inactive on hover. Restore
+   the pointer for anything clickable, and a not-allowed cursor when disabled. */
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  input[type='submit']:not(:disabled),
+  input[type='button']:not(:disabled),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  select:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  input:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+}
