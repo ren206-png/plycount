@@ -99,6 +99,9 @@ export default function QuoteDetailPage() {
   const quoteTotal = (lines ?? []).reduce((sum, l) => sum + l.qty * l.unit_price, 0)
   const costFor = (lineId: string) => costs?.find((c) => c.quote_line_id === lineId)?.unit_cost_snapshot ?? null
   const totalCost = (lines ?? []).reduce((sum, l) => sum + l.qty * (costFor(l.id) ?? 0), 0)
+  // A line with no cost on file would count as free and push the blended margin
+  // toward 100%, so show no blended margin until every line has a cost.
+  const missingCost = canSeeCosts && !!costs && (lines ?? []).some((l) => costFor(l.id) === null)
   const blendedMargin = quoteTotal > 0 ? marginPct(quoteTotal, totalCost) : 0
 
   const convertMutation = useMutation({
@@ -207,8 +210,8 @@ export default function QuoteDetailPage() {
               <td className="px-4 py-3" colSpan={canSeeCosts ? 4 : 3}>Total</td>
               <td className="px-4 py-3">{formatCurrency(quoteTotal)}</td>
               {canSeeCosts && (
-                <td className={cn('px-4 py-3', blendedMargin < 15 ? 'text-red-600' : 'text-green-700')}>
-                  {formatPercent(blendedMargin)}
+                <td className={cn('px-4 py-3', missingCost ? 'text-gray-500' : blendedMargin < 15 ? 'text-red-600' : 'text-green-700')}>
+                  {missingCost ? '—' : formatPercent(blendedMargin)}
                 </td>
               )}
             </tr>
@@ -239,6 +242,12 @@ export default function QuoteDetailPage() {
           <p className="self-center text-sm text-gray-500">This quote has been converted to an order.</p>
         )}
       </div>
+      {missingCost && (
+        <p className="mt-3 text-sm text-amber-600">
+          One or more lines have no cost on file, so the margin can&apos;t be calculated. Add the cost under Cost
+          Inputs, then create the quote again.
+        </p>
+      )}
       {customer && !customer.contact_email && (
         <p className="mt-3 text-sm text-amber-600">
           This customer has no contact email — add one on the customer page before sending.
