@@ -18,6 +18,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import type { UserProfile, Organization } from '@/types'
 import { pendingStaffName, STAFF_JOIN_NAME_KEY } from '@/lib/auth/staff-join'
+import { signOutAndLeave } from '@/lib/auth/sign-out'
 
 interface AuthState {
   user: User | null
@@ -179,7 +180,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase, loadProfileAndOrg])
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut()
+    // End the session, then do a full page load of /login so the user is never
+    // left looking at a protected page (see lib/auth/sign-out.ts).
+    await signOutAndLeave(supabase, (url) => window.location.assign(url))
   }, [supabase])
 
   return (
