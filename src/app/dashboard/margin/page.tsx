@@ -5,8 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Customer, Order, OrderLine, OrderLineCost, Product } from '@/types'
 import { formatCurrency, formatPercent, cn } from '@/lib/utils'
-import { marginPct } from '@/lib/pricing/resolve'
-import { rollUp } from '@/lib/margin/rollup'
+import { rollUp, summarizeBucket } from '@/lib/margin/rollup'
 
 export default function MarginDashboardPage() {
   const supabase = createClient()
@@ -60,11 +59,13 @@ export default function MarginDashboardPage() {
   })
 
   const skuFor = (id: string) => products?.find((p) => p.id === id)?.sku_code ?? id
+  // A line with no cost row has no cost on file; it is not free.
   const costByLine = useMemo(
-    () => new Map((lineCosts ?? []).map((c) => [c.order_line_id, c.unit_cost_snapshot ?? 0])),
+    () => new Map((lineCosts ?? []).filter((c) => c.unit_cost_snapshot !== null).map((c) => [c.order_line_id, c.unit_cost_snapshot as number])),
     [lineCosts]
   )
   const unitCostFor = (lineId: string) => costByLine.get(lineId) ?? 0
+  const hasCost = (lineId: string) => costByLine.has(lineId)
   const orderFor = (id: string) => orders?.find((o) => o.id === id)
   const customerNameForOrder = (orderId: string) => {
     const order = orderFor(orderId)
@@ -79,6 +80,7 @@ export default function MarginDashboardPage() {
         label: skuFor(l.product_id),
         revenue: l.qty * l.unit_price,
         cost: l.qty * unitCostFor(l.id),
+        costed: hasCost(l.id),
       }))
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,14 +93,27 @@ export default function MarginDashboardPage() {
         label: customerNameForOrder(l.order_id),
         revenue: l.qty * l.unit_price,
         cost: l.qty * unitCostFor(l.id),
+        costed: hasCost(l.id),
       }))
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderLines, orders, customers, costByLine])
 
-  const totalRevenue = (orderLines ?? []).reduce((sum, l) => sum + l.qty * l.unit_price, 0)
-  const totalCost = (orderLines ?? []).reduce((sum, l) => sum + l.qty * unitCostFor(l.id), 0)
-  const overallMargin = totalRevenue > 0 ? marginPct(totalRevenue, totalCost) : 0
+  const totals = useMemo(() => {
+    const rows = rollUp(
+      (orderLines ?? []).map((l) => ({
+        label: 'all',
+        revenue: l.qty * l.unit_price,
+        cost: l.qty * unitCostFor(l.id),
+        costed: hasCost(l.id),
+      }))
+    )
+    return rows[0] ?? { key: 'all', label: 'all', revenue: 0, costedRevenue: 0, cost: 0 }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderLines, costByLine])
+  const overall = summarizeBucket(totals)
+  const totalRevenue = totals.revenue
+  const totalCost = totals.cost
 
   return (
     <div>
@@ -117,12 +132,18 @@ export default function MarginDashboardPage() {
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Total cost</p>
           <p className="mt-1 text-xl font-bold text-gray-900">{formatCurrency(totalCost)}</p>
+          {overall.uncostedRevenue > 0 && <p className="mt-1 text-xs text-amber-600">Only for lines that have a cost on file</p>}
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Blended margin</p>
-          <p className={cn('mt-1 text-xl font-bold', overallMargin < 15 ? 'text-red-600' : 'text-green-700')}>
-            {formatPercent(overallMargin)}
+          <p className={cn('mt-1 text-xl font-bold', overall.margin === null ? 'text-gray-400' : overall.margin < 15 ? 'text-red-600' : 'text-green-700')}>
+            {overall.margin === null ? '—' : formatPercent(overall.margin)}
           </p>
+          {overall.uncostedRevenue > 0 && (
+            <p className="mt-1 text-xs text-amber-600">
+              {formatCurrency(overall.uncostedRevenue)} of revenue has no cost on file and is left out.
+            </p>
+          )}
         </div>
       </div>
 
@@ -145,13 +166,18 @@ export default function MarginDashboardPage() {
                 <tr><td className="px-4 py-6 text-gray-500" colSpan={3}>No booked orders yet.</td></tr>
               )}
               {bySku.map((b) => {
-                const margin = marginPct(b.revenue, b.cost)
+                const { margin, uncostedRevenue } = summarizeBucket(b)
                 return (
                   <tr key={b.key}>
                     <td className="px-4 py-3 font-mono text-xs text-gray-700">{b.label}</td>
                     <td className="px-4 py-3 text-gray-600">{formatCurrency(b.revenue)}</td>
-                    <td className={cn('px-4 py-3 font-semibold', margin < 15 ? 'text-red-600' : 'text-green-700')}>
-                      {formatPercent(margin)}
+                    <td className={cn('px-4 py-3 font-semibold', margin === null ? 'text-gray-400' : margin < 15 ? 'text-red-600' : 'text-green-700')}>
+                      {margin === null ? '—' : formatPercent(margin)}
+                      {uncostedRevenue > 0 && (
+                        <span className="block text-xs font-normal text-amber-600">
+                          {margin === null ? 'no cost on file' : `${formatCurrency(uncostedRevenue)} has no cost`}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 )
@@ -178,13 +204,18 @@ export default function MarginDashboardPage() {
                 <tr><td className="px-4 py-6 text-gray-500" colSpan={3}>No booked orders yet.</td></tr>
               )}
               {byCustomer.map((b) => {
-                const margin = marginPct(b.revenue, b.cost)
+                const { margin, uncostedRevenue } = summarizeBucket(b)
                 return (
                   <tr key={b.key}>
                     <td className="px-4 py-3 text-gray-700">{b.label}</td>
                     <td className="px-4 py-3 text-gray-600">{formatCurrency(b.revenue)}</td>
-                    <td className={cn('px-4 py-3 font-semibold', margin < 15 ? 'text-red-600' : 'text-green-700')}>
-                      {formatPercent(margin)}
+                    <td className={cn('px-4 py-3 font-semibold', margin === null ? 'text-gray-400' : margin < 15 ? 'text-red-600' : 'text-green-700')}>
+                      {margin === null ? '—' : formatPercent(margin)}
+                      {uncostedRevenue > 0 && (
+                        <span className="block text-xs font-normal text-amber-600">
+                          {margin === null ? 'no cost on file' : `${formatCurrency(uncostedRevenue)} has no cost`}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 )

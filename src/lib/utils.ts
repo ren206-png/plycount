@@ -9,6 +9,12 @@ export function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
 }
 
+// Unit prices can have more than two decimals ($3.5004). Show them in full,
+// at least two, so quantity times price visibly adds up to the line total.
+export function formatUnitPrice(value: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value)
+}
+
 export function formatPercent(value: number): string {
   return `${value.toFixed(1)}%`
 }

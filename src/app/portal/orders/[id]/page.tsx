@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Order, Product } from '@/types'
-import { cn, formatCurrency, isUUID } from '@/lib/utils'
+import { cn, formatCurrency, isUUID, formatUnitPrice } from '@/lib/utils'
 
 type PortalOrderLine = { id: string; product_id: string; qty: number; unit_price: number; fulfilled_qty: number }
 
@@ -92,7 +92,7 @@ export default function PortalOrderDetailPage() {
               <tr key={l.id}>
                 <td className="px-4 py-3 font-mono text-xs text-gray-700">{skuFor(l.product_id)}</td>
                 <td className="px-4 py-3 text-gray-600">{l.qty}</td>
-                <td className="px-4 py-3 text-gray-600">{formatCurrency(l.unit_price)}</td>
+                <td className="px-4 py-3 text-gray-600">{formatUnitPrice(l.unit_price)}</td>
                 <td className="px-4 py-3 text-gray-600">{l.fulfilled_qty} / {l.qty}</td>
               </tr>
             ))}

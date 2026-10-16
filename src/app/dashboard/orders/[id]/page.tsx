@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
 import type { Customer, Invoice, InvoiceLine, Order, OrderLine, Product } from '@/types'
 import { Button } from '@/components/ui/Button'
-import { formatCurrency, cn, isUUID } from '@/lib/utils'
+import { formatCurrency, cn, isUUID, formatUnitPrice } from '@/lib/utils'
 import { STATUS_LABEL } from '@/lib/invoicing'
 import { toast } from 'sonner'
 
@@ -286,7 +286,7 @@ export default function OrderDetailPage() {
                 <tr key={l.id}>
                   <td className="px-4 py-3 font-mono text-xs text-gray-700">{skuFor(l.product_id)}</td>
                   <td className="px-4 py-3 text-gray-600">{l.qty}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatCurrency(l.unit_price)}</td>
+                  <td className="px-4 py-3 text-gray-600">{formatUnitPrice(l.unit_price)}</td>
                   <td className="px-4 py-3">
                     <input
                       type="number"

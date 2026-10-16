@@ -113,6 +113,16 @@ export default function CostInputsPage() {
       <form
         onSubmit={(e) => {
           e.preventDefault()
+          // A cost dated in the future is ignored by quotes until that day; make
+          // sure that is what was meant before saving it.
+          if (
+            effectiveDate > today &&
+            !window.confirm(
+              `This cost is dated ${effectiveDate}, which is in the future, so quotes will not use it until then. Save it anyway?`
+            )
+          ) {
+            return
+          }
           mutation.mutate()
         }}
         className="mb-8 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-6 rounded-lg border border-gray-200 bg-white p-4 items-end"
@@ -147,8 +157,10 @@ export default function CostInputsPage() {
           <Input type="date" required value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} />
           {effectiveDate > today && (
             <p className="mt-1 text-sm text-amber-600">
-              This date is in the future, so quotes will not use this cost until {effectiveDate}. Use today&apos;s
-              date to apply it now.
+              This date is in the future, so quotes will not use this cost until {effectiveDate}.{' '}
+              <button type="button" className="font-semibold underline" onClick={() => setEffectiveDate(today)}>
+                Use today ({today})
+              </button>
             </p>
           )}
         </div>

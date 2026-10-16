@@ -7,7 +7,7 @@ import { useAuth } from '@/providers/AuthProvider'
 import type { Customer, MarginAlertReview, PriceBookLineMargin, Product } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Input, Label } from '@/components/ui/Input'
-import { formatCurrency, formatPercent, cn } from '@/lib/utils'
+import { formatCurrency, formatPercent, cn, formatUnitPrice } from '@/lib/utils'
 import { ALERT_THRESHOLD_PCT, activeMarginAlerts, suggestedRepriceUnitPrice } from '@/lib/margin/alerts'
 import { toast } from 'sonner'
 
@@ -176,7 +176,7 @@ export default function MarginAlertsPage() {
                     {l.price_book_name}
                     <span className="block text-xs text-gray-400">{customerNameFor(l.customer_id)}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{formatCurrency(l.unit_price)}</td>
+                  <td className="px-4 py-3 text-gray-600">{formatUnitPrice(l.unit_price)}</td>
                   <td className="px-4 py-3 text-gray-600">
                     {l.current_unit_cost !== null ? formatCurrency(l.current_unit_cost) : '—'}
                   </td>

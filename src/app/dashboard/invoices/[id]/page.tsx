@@ -9,7 +9,7 @@ import { useAuth } from '@/providers/AuthProvider'
 import type { Customer, Invoice, InvoiceBalance, InvoiceLine, InvoicePayment, Order, OrderLine, PaymentMethod, Product } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Input, Label, Select } from '@/components/ui/Input'
-import { cn, formatCurrency, isUUID } from '@/lib/utils'
+import { cn, formatCurrency, isUUID, formatUnitPrice } from '@/lib/utils'
 import { PAYMENT_METHODS, STATUS_LABEL, STATUS_STYLE, daysOverdue, displayStatus, dueDateFor, methodLabel, toCents } from '@/lib/invoicing'
 import { toast } from 'sonner'
 
@@ -246,7 +246,7 @@ export default function InvoiceDetailPage() {
               <tr key={l.id}>
                 <td className="px-4 py-3 font-mono text-xs text-gray-700">{skuFor(l.order_line_id)}</td>
                 <td className="px-4 py-3 text-right text-gray-600">{l.qty_invoiced}</td>
-                <td className="px-4 py-3 text-right text-gray-600">{formatCurrency(l.unit_price)}</td>
+                <td className="px-4 py-3 text-right text-gray-600">{formatUnitPrice(l.unit_price)}</td>
                 <td className="px-4 py-3 text-right font-medium text-gray-900">{formatCurrency(l.qty_invoiced * l.unit_price)}</td>
               </tr>
             ))}
