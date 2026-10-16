@@ -10,6 +10,7 @@ import { APPROVALS_HREF, buildNav, canAccessPath } from '@/lib/nav'
 import { createClient } from '@/lib/supabase/client'
 import { useQuery } from '@tanstack/react-query'
 import { ResponsiveShell } from '@/components/layout/ResponsiveShell'
+import { Logo, LogoMark } from '@/components/brand/Logo'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -53,10 +54,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <ResponsiveShell
       title="PlyCount"
+      titleIcon={<LogoMark uid="bar" size={28} />}
       brand={
         <>
-          <p className="text-lg font-bold text-brand-700">PlyCount</p>
-          <p className="truncate text-xs text-gray-500">
+          <Logo uid="side" size={34} tone="light" />
+          <p className="mt-1.5 truncate text-xs text-gray-500">
             {isLoading ? 'Loading…' : organization?.name ?? 'No organization'}
           </p>
         </>

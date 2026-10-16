@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { markDataUri } from '@/lib/brand'
 
 // Social preview card (1200x630) used by Open Graph and Twitter/X link previews.
 // Matches the dark landing page: spotlight, amber accent, and a small quote card
@@ -7,7 +8,6 @@ export const alt = 'PlyCount: contract pricing and live margin for paper convert
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-const AMBER = '#f0b45a'
 
 function Row({ sku, margin, low }: { sku: string; margin: string; low?: boolean }) {
   return (
@@ -47,8 +47,8 @@ export default function OpengraphImage() {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', width: 640 }}>
-          <div style={{ display: 'flex', alignItems: 'center', fontSize: 38, fontWeight: 700, marginBottom: 34 }}>
-            <div style={{ display: 'flex', width: 20, height: 20, borderRadius: 5, background: AMBER, marginRight: 16 }} />
+          <div style={{ display: 'flex', alignItems: 'center', fontSize: 40, fontWeight: 700, marginBottom: 34 }}>
+            <img src={markDataUri(64)} width={64} height={64} alt="" style={{ marginRight: 18 }} />
             PlyCount
           </div>
           <div style={{ display: 'flex', fontSize: 66, fontWeight: 700, lineHeight: 1.08, letterSpacing: -1.5 }}>

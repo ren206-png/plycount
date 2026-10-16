@@ -139,6 +139,7 @@ export function organizationJsonLd() {
     '@type': 'Organization',
     name: SITE_NAME,
     url: SITE_URL,
+    logo: `${SITE_URL}/brand/plycount-mark.svg`,
   }
 }
 

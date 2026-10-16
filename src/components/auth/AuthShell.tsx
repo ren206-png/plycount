@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SITE_NAME } from '@/lib/site'
+import { Logo } from '@/components/brand/Logo'
 
 // Shared look for the sign-in, sign-up, password and access-request pages: the
 // same dark theme and soft spotlight as the landing page, with the form on a
@@ -12,7 +13,6 @@ export const AUTH_INPUT =
 export const AUTH_BUTTON = `inline-flex w-full items-center justify-center rounded-full bg-gradient-to-b from-white to-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-[0_0_0_1px_rgba(255,255,255,0.35),0_10px_40px_rgba(255,255,255,0.1)] transition hover:to-white disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS}`
 export const AUTH_BUTTON_GLASS = `inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS}`
 export const AUTH_LINK = 'font-medium text-amber-200 hover:text-amber-100 hover:underline'
-export const AUTH_MUTED = 'text-sm text-gray-400'
 
 interface Props {
   title: string
@@ -33,9 +33,8 @@ export function AuthShell({ title, subtitle, children, footer, centered }: Props
       </div>
 
       <div className="relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-10">
-        <Link href="/" className={`mb-8 inline-flex items-center gap-2 self-center rounded text-lg font-semibold tracking-tight text-white ${FOCUS}`}>
-          <span aria-hidden="true" className="inline-block h-2.5 w-2.5 rounded-sm bg-amber-300" />
-          {SITE_NAME}
+        <Link href="/" aria-label={`${SITE_NAME} home`} className={`mb-8 self-center rounded-lg ${FOCUS}`}>
+          <Logo uid="auth" size={40} tone="dark" />
         </Link>
         <main className={`lp-rise rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.07] to-white/[0.02] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.5)] backdrop-blur sm:p-8 ${centered ? 'text-center' : ''}`}>
           <h1 className="text-2xl font-semibold tracking-tight text-white">{title}</h1>
