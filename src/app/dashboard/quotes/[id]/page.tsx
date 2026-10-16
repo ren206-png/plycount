@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
 import type { Customer, Product, PriceBook, Quote, QuoteLine, QuoteLineCost } from '@/types'
 import { Button } from '@/components/ui/Button'
-import { formatCurrency, formatPercent, cn, isUUID } from '@/lib/utils'
+import { formatCurrency, formatPercent, cn, isUUID, formatUnitPrice } from '@/lib/utils'
 import { marginPct } from '@/lib/pricing/resolve'
 import { toast } from 'sonner'
 
@@ -191,7 +191,7 @@ export default function QuoteDetailPage() {
                 <tr key={l.id}>
                   <td className="px-4 py-3 font-mono text-xs text-gray-700">{skuFor(l.product_id)}</td>
                   <td className="px-4 py-3 text-gray-600">{l.qty}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatCurrency(l.unit_price)}</td>
+                  <td className="px-4 py-3 text-gray-600">{formatUnitPrice(l.unit_price)}</td>
                   {canSeeCosts && (
                     <td className="px-4 py-3 text-gray-600">{unitCost === null ? '—' : formatCurrency(unitCost)}</td>
                   )}

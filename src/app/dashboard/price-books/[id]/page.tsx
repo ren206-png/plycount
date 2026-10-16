@@ -8,7 +8,7 @@ import type { PriceBook, PriceBookLine, Product } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/providers/AuthProvider'
 import { Input, Label, Select } from '@/components/ui/Input'
-import { formatCurrency, isUUID } from '@/lib/utils'
+import { formatCurrency, isUUID, formatUnitPrice } from '@/lib/utils'
 import { toast } from 'sonner'
 
 export default function PriceBookDetailPage() {
@@ -173,7 +173,7 @@ export default function PriceBookDetailPage() {
             {lines?.map((l) => (
               <tr key={l.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-mono text-xs text-gray-700">{skuFor(l.product_id)}</td>
-                <td className="px-4 py-3 font-medium text-gray-900">{formatCurrency(l.unit_price)}</td>
+                <td className="px-4 py-3 font-medium text-gray-900">{formatUnitPrice(l.unit_price)}</td>
                 <td className="px-4 py-3 text-gray-600">{l.min_qty}</td>
                 <td className="px-4 py-3 text-gray-600">{l.max_qty ?? '∞'}</td>
                 <td className="px-4 py-3 text-right">
