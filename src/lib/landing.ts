@@ -61,6 +61,10 @@ export const MORE_FEATURES = [
     body: 'Give each customer a read-only login to their own quotes, orders and invoices. They never see your costs.',
   },
   {
+    title: 'Damaged goods log',
+    body: 'Record product scrapped or damaged in production, where and why, with the money lost worked out from your costs. Admins only.',
+  },
+  {
     title: 'Roles and an audit trail',
     body: 'Owners and administrators see costs and margins. Sales staff quote without them. Price changes and quote-to-order conversions are logged.',
   },
@@ -107,7 +111,7 @@ export const FAQS = [
   {
     question: 'Is there a mobile app or a bill-of-materials costing engine?',
     answer:
-      'Not yet. PlyCount is a web app focused on pricing, margin and quoting. Cost is entered per SKU rather than calculated from a bill of materials, and there is no offline or mobile mode.',
+      'Not yet. PlyCount is a web app focused on pricing, margin and quoting, and it works in a phone’s browser. There is no native mobile app or offline mode, and cost is entered per SKU rather than calculated from a bill of materials.',
   },
   {
     question: 'How do I get access?',

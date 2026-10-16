@@ -41,3 +41,44 @@ body {
     cursor: not-allowed;
   }
 }
+
+/* ------------------------------------------------------------------
+   Landing page (/) motion. CSS only, no scripts, and switched off for
+   anyone who asks their device for reduced motion.
+   ------------------------------------------------------------------ */
+@keyframes lp-rise {
+  from { opacity: 0; transform: translateY(18px); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes lp-marquee {
+  to { transform: translateX(-50%); }
+}
+@keyframes lp-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+@keyframes lp-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.9; }
+}
+
+.lp-rise { animation: lp-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: var(--d, 0s); }
+.lp-float { animation: lp-float 7s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.lp-glow { animation: lp-glow 6s ease-in-out infinite; }
+.lp-marquee-track { display: flex; width: max-content; animation: lp-marquee 45s linear infinite; }
+.lp-marquee:hover .lp-marquee-track { animation-play-state: paused; }
+
+.lp-grid-floor {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 56px 56px;
+  transform: perspective(620px) rotateX(62deg);
+  transform-origin: top;
+  -webkit-mask-image: linear-gradient(to bottom, black, transparent 80%);
+  mask-image: linear-gradient(to bottom, black, transparent 80%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-rise, .lp-float, .lp-glow, .lp-marquee-track { animation: none; }
+}
