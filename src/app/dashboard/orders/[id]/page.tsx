@@ -9,6 +9,7 @@ import { useAuth } from '@/providers/AuthProvider'
 import type { Customer, Invoice, InvoiceLine, Order, OrderLine, Product } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency, cn, isUUID } from '@/lib/utils'
+import { STATUS_LABEL } from '@/lib/invoicing'
 import { toast } from 'sonner'
 
 const STATUS_STYLES: Record<string, string> = {
@@ -90,10 +91,10 @@ export default function OrderDetailPage() {
       // otherwise miss the new invoice and show 0 invoiced until a reload.
       const { data, error } = await supabase
         .from('invoice_lines')
-        .select('*, invoices!inner(order_id)')
+        .select('*, invoices!inner(order_id, status)')
         .eq('invoices.order_id', params.id)
       if (error) throw error
-      return data as InvoiceLine[]
+      return data as (InvoiceLine & { invoices?: { status: string } })[]
     },
   })
 
@@ -147,7 +148,7 @@ export default function OrderDetailPage() {
 
   const invoicedQtyFor = (orderLineId: string) =>
     (invoiceLines ?? [])
-      .filter((il) => il.order_line_id === orderLineId)
+      .filter((il) => il.order_line_id === orderLineId && il.invoices?.status !== 'void')
       .reduce((sum, il) => sum + il.qty_invoiced, 0)
 
   const updateFulfillment = useMutation({
@@ -347,6 +348,7 @@ export default function OrderDetailPage() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
               <tr>
+                <th className="px-4 py-3">Invoice</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Total</th>
                 <th className="px-4 py-3">Created</th>
@@ -355,11 +357,16 @@ export default function OrderDetailPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {!invoices?.length && (
-                <tr><td className="px-4 py-6 text-gray-500" colSpan={4}>No invoices yet.</td></tr>
+                <tr><td className="px-4 py-6 text-gray-500" colSpan={5}>No invoices yet.</td></tr>
               )}
               {invoices?.map((i) => (
                 <tr key={i.id}>
-                  <td className="px-4 py-3 capitalize text-gray-700">{i.status}</td>
+                  <td className="px-4 py-3">
+                    <Link href={`/dashboard/invoices/${i.id}`} className="font-medium text-brand-600 hover:underline">
+                      {i.invoice_number}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-gray-700">{STATUS_LABEL[i.status]}</td>
                   <td className="px-4 py-3 font-medium text-gray-900">{formatCurrency(i.total_amount)}</td>
                   <td className="px-4 py-3 text-gray-600">{new Date(i.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-gray-500">
