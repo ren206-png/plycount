@@ -31,6 +31,7 @@ const ALL_NAV: NavItem[] = [
   { href: '/dashboard/price-books', label: 'Price Books' },
   { href: '/dashboard/quotes', label: 'Quotes' },
   { href: '/dashboard/orders', label: 'Orders' },
+  { href: '/dashboard/production-losses', label: 'Damaged goods' },
   { href: '/dashboard/margin-alerts', label: 'Margin Alerts' },
   { href: '/dashboard/margin', label: 'Margin Dashboard' },
   { href: '/dashboard/settings/billing', label: 'Billing' },
@@ -49,6 +50,7 @@ const STAFF_HREFS = new Set([
 // Pages (and everything under them) that only admins may open.
 const ADMIN_ONLY_PREFIXES = [
   '/dashboard/cost-inputs',
+  '/dashboard/production-losses',
   '/dashboard/margin-alerts',
   '/dashboard/margin',
   '/dashboard/settings',
