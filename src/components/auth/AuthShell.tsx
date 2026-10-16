@@ -8,7 +8,7 @@ const FOCUS = 'focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-
 
 export const AUTH_LABEL = 'mb-1.5 block text-sm font-medium text-gray-300'
 export const AUTH_INPUT =
-  'w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-amber-300/60 focus:outline-none focus:ring-1 focus:ring-amber-300/60'
+  'auth-input w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-amber-300/60 focus:outline-none focus:ring-1 focus:ring-amber-300/60'
 export const AUTH_BUTTON = `inline-flex w-full items-center justify-center rounded-full bg-gradient-to-b from-white to-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-[0_0_0_1px_rgba(255,255,255,0.35),0_10px_40px_rgba(255,255,255,0.1)] transition hover:to-white disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS}`
 export const AUTH_BUTTON_GLASS = `inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS}`
 export const AUTH_LINK = 'font-medium text-amber-200 hover:text-amber-100 hover:underline'

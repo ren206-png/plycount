@@ -82,3 +82,15 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .lp-rise, .lp-float, .lp-glow, .lp-marquee-track { animation: none; }
 }
+
+/* Browsers paint autofilled fields pale blue, which looks wrong on the dark
+   sign-in card. Keep them dark with light text (the inset shadow is the only
+   thing that overrides the browser's autofill background). */
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+  caret-color: #ffffff;
+  box-shadow: 0 0 0 1000px #191c1a inset;
+  transition: background-color 9999s ease-out 0s;
+}
