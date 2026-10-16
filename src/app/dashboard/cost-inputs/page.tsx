@@ -88,6 +88,8 @@ export default function CostInputsPage() {
   // Date.now() directly during render is impure (flagged by the
   // react-hooks/purity rule).
   const now = useState(() => Date.now())[0]
+  // Quotes use the newest cost dated today or earlier (same UTC date the lookup uses).
+  const today = useState(() => new Date().toISOString().slice(0, 10))[0]
   const isStale = (dateStr: string) => {
     const days = (now - new Date(dateStr).getTime()) / 86_400_000
     return days > STALE_AFTER_DAYS
@@ -136,6 +138,12 @@ export default function CostInputsPage() {
         <div className="col-span-5">
           <Label>Effective date</Label>
           <Input type="date" required value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} />
+          {effectiveDate > today && (
+            <p className="mt-1 text-sm text-amber-600">
+              This date is in the future, so quotes will not use this cost until {effectiveDate}. Use today&apos;s
+              date to apply it now.
+            </p>
+          )}
         </div>
         <Button type="submit" disabled={mutation.isPending || !productId}>
           {mutation.isPending ? 'Saving…' : 'Add entry'}
@@ -180,9 +188,9 @@ export default function CostInputsPage() {
                   <td className="px-4 py-3 text-gray-600">{formatCurrency(ci.freight_cost_per_unit)}</td>
                   <td className="px-4 py-3 font-semibold text-gray-900">{formatCurrency(total)}</td>
                   <td className="px-4 py-3">
-                    <span className={cn(stale && 'font-semibold text-amber-600')}>
+                    <span className={cn(stale && 'font-semibold text-amber-600', ci.effective_date > today && 'font-semibold text-amber-600')}>
                       {ci.effective_date}
-                      {stale && ' ⚠ stale'}
+                      {ci.effective_date > today ? ' · not active yet' : stale && ' ⚠ stale'}
                     </span>
                   </td>
                 </tr>
