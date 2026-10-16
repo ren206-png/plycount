@@ -8,9 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { TurnstileWidget } from '@/components/TurnstileWidget'
 import { captchaOptions, captchaRequired } from '@/lib/turnstile'
 import { STAFF_JOIN_NAME_KEY } from '@/lib/auth/staff-join'
-
-const INPUT =
-  'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500'
+import { AUTH_BUTTON, AUTH_BUTTON_GLASS, AUTH_INPUT, AUTH_LABEL, AUTH_LINK, AuthShell } from '@/components/auth/AuthShell'
 
 export default function StaffJoinPage() {
   const router = useRouter()
@@ -71,46 +69,36 @@ export default function StaffJoinPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-12">
-      <h1 className="mb-1 text-2xl font-bold text-gray-900">Request staff access</h1>
-      <p className="mb-6 text-sm text-gray-600">
-        For factory staff. The administrator reviews every request, and you can sign in once it is approved.
-      </p>
+    <AuthShell
+      title="Request staff access"
+      subtitle="For factory staff. The administrator reviews every request, and you can sign in once it is approved."
+      footer={
+        <>
+          Already approved?{' '}
+          <Link href="/login" className={AUTH_LINK}>
+            Sign in
+          </Link>
+        </>
+      }
+    >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Your full name</label>
-          <input required maxLength={120} value={fullName} onChange={(e) => setFullName(e.target.value)} className={INPUT} />
+          <label className={AUTH_LABEL}>Your full name</label>
+          <input required maxLength={120} autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} className={AUTH_INPUT} />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Work email</label>
-          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={INPUT} />
+          <label className={AUTH_LABEL}>Work email</label>
+          <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={AUTH_INPUT} />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Choose a password</label>
-          <input
-            type="password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={INPUT}
-          />
+          <label className={AUTH_LABEL}>Choose a password</label>
+          <input type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className={AUTH_INPUT} />
         </div>
         <TurnstileWidget onToken={setCaptchaToken} resetSignal={captchaReset} />
-        <button
-          type="submit"
-          disabled={isSubmitting || !captchaReady}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
-        >
+        <button type="submit" disabled={isSubmitting || !captchaReady} className={AUTH_BUTTON}>
           {isSubmitting ? 'Sending request…' : 'Request access'}
         </button>
       </form>
-      <p className="mt-4 text-sm text-gray-600">
-        Already approved?{' '}
-        <Link href="/login" className="font-medium text-brand-600 hover:underline">
-          Sign in
-        </Link>
-      </p>
-    </main>
+    </AuthShell>
   )
 }

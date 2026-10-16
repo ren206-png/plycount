@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { TurnstileWidget } from '@/components/TurnstileWidget'
 import { captchaOptions, captchaRequired } from '@/lib/turnstile'
+import { AUTH_BUTTON, AUTH_BUTTON_GLASS, AUTH_INPUT, AUTH_LABEL, AUTH_LINK, AuthShell } from '@/components/auth/AuthShell'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -37,50 +38,32 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
-      <h1 className="mb-2 text-2xl font-bold text-gray-900">Reset your password</h1>
+    <AuthShell
+      title="Reset your password"
+      subtitle={sent ? undefined : 'Enter your email and we will send you a link to choose a new password.'}
+      footer={
+        <Link href="/login" className={AUTH_LINK}>
+          Back to sign in
+        </Link>
+      }
+    >
       {sent ? (
-        <>
-          <p className="mb-6 text-sm text-gray-600">
-            If an account exists for <span className="font-medium">{email}</span>, we have emailed
-            a link to reset the password. It can take a minute; check your spam folder too.
-          </p>
-          <Link href="/login" className="text-sm font-medium text-brand-600 hover:underline">
-            Back to sign in
-          </Link>
-        </>
+        <p className="text-sm leading-relaxed text-gray-300">
+          If an account exists for <span className="font-medium text-white">{email}</span>, we have emailed a link to
+          reset the password. It can take a minute; check your spam folder too.
+        </p>
       ) : (
-        <>
-          <p className="mb-6 text-sm text-gray-500">
-            Enter your email and we will send you a link to choose a new password.
-          </p>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-              />
-            </div>
-            <TurnstileWidget onToken={setCaptchaToken} resetSignal={captchaReset} />
-            <button
-              type="submit"
-              disabled={isSubmitting || !captchaReady}
-              className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
-            >
-              {isSubmitting ? 'Sending…' : 'Send reset link'}
-            </button>
-          </form>
-          <p className="mt-4 text-sm text-gray-600">
-            <Link href="/login" className="font-medium text-brand-600 hover:underline">
-              Back to sign in
-            </Link>
-          </p>
-        </>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className={AUTH_LABEL}>Email</label>
+            <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={AUTH_INPUT} />
+          </div>
+          <TurnstileWidget onToken={setCaptchaToken} resetSignal={captchaReset} />
+          <button type="submit" disabled={isSubmitting || !captchaReady} className={AUTH_BUTTON}>
+            {isSubmitting ? 'Sending…' : 'Send reset link'}
+          </button>
+        </form>
       )}
-    </main>
+    </AuthShell>
   )
 }

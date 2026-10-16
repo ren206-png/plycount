@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { safeRedirectPath } from '@/lib/auth/redirect'
 import { TurnstileWidget } from '@/components/TurnstileWidget'
 import { captchaOptions, captchaRequired } from '@/lib/turnstile'
+import { AUTH_BUTTON, AUTH_BUTTON_GLASS, AUTH_INPUT, AUTH_LABEL, AUTH_LINK, AuthShell } from '@/components/auth/AuthShell'
 
 export default function LoginPage() {
   return (
@@ -50,49 +51,37 @@ function LoginForm() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Sign in</h1>
+    <AuthShell
+      title="Sign in"
+      subtitle="Welcome back. Sign in to your PlyCount account."
+      footer={
+        <>
+          Factory staff?{' '}
+          <Link href="/staff/join" className={AUTH_LINK}>
+            Request access
+          </Link>
+        </>
+      }
+    >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          />
+          <label className={AUTH_LABEL}>Email</label>
+          <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={AUTH_INPUT} />
         </div>
         <div>
-          <div className="mb-1 flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <Link href="/forgot-password" className="text-sm font-medium text-brand-600 hover:underline">
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className="block text-sm font-medium text-gray-300">Password</label>
+            <Link href="/forgot-password" className={`text-sm ${AUTH_LINK}`}>
               Forgot password?
             </Link>
           </div>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          />
+          <input type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className={AUTH_INPUT} />
         </div>
         <TurnstileWidget onToken={setCaptchaToken} resetSignal={captchaReset} />
-        <button
-          type="submit"
-          disabled={isSubmitting || !captchaReady}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
-        >
+        <button type="submit" disabled={isSubmitting || !captchaReady} className={AUTH_BUTTON}>
           {isSubmitting ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
-      <p className="mt-4 text-sm text-gray-600">
-        Factory staff?{' '}
-        <Link href="/staff/join" className="font-medium text-brand-600 hover:underline">
-          Request access
-        </Link>
-      </p>
-    </main>
+    </AuthShell>
   )
 }
