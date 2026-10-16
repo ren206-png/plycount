@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
-import type { MarginAlertReview, PriceBookLineMargin } from '@/types'
+import type { Invoice, InvoiceBalance, MarginAlertReview, PriceBookLineMargin } from '@/types'
+import { formatCurrency } from '@/lib/utils'
+import { owedTotals } from '@/lib/invoicing'
 import { activeMarginAlerts } from '@/lib/margin/alerts'
 
 const STEPS = [
@@ -17,8 +19,10 @@ const STEPS = [
 ]
 
 export default function DashboardOverviewPage() {
-  const { organization } = useAuth()
+  const { organization, isOrgAdmin } = useAuth()
   const supabase = createClient()
+  // Captured once so render stays pure.
+  const today = useState(() => new Date().toISOString().slice(0, 10))[0]
 
   const { data: lines } = useQuery({
     queryKey: ['price-book-line-margins'],
@@ -41,6 +45,38 @@ export default function DashboardOverviewPage() {
     },
   })
 
+  // Money owed: admins only (staff cannot read invoices).
+  const { data: invoices } = useQuery({
+    queryKey: ['invoices-all'],
+    enabled: isOrgAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('invoices').select('*').order('created_at', { ascending: false })
+      if (error) throw error
+      return data as Invoice[]
+    },
+  })
+  const { data: balances } = useQuery({
+    queryKey: ['invoice-balances'],
+    enabled: isOrgAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('invoice_balances').select('*')
+      if (error) throw error
+      return data as InvoiceBalance[]
+    },
+  })
+  const owed = useMemo(() => {
+    const balanceFor = new Map((balances ?? []).map((b) => [b.invoice_id, Number(b.balance)]))
+    return owedTotals(
+      (invoices ?? []).map((i) => ({
+        status: i.status,
+        due_date: i.due_date,
+        total_amount: Number(i.total_amount),
+        balance: balanceFor.get(i.id) ?? Number(i.total_amount),
+      })),
+      today
+    )
+  }, [invoices, balances, today])
+
   const alertCount = useMemo(() => activeMarginAlerts(lines ?? [], reviews ?? []).length, [lines, reviews])
 
   return (
@@ -51,6 +87,24 @@ export default function DashboardOverviewPage() {
       <p className="mt-1 text-gray-600">
         Get a quote out the door with live margin visibility in five steps.
       </p>
+
+      {isOrgAdmin && owed.openCount > 0 && (
+        <Link
+          href="/dashboard/invoices"
+          className={`mt-6 flex flex-wrap items-center justify-between gap-2 rounded-lg border px-4 py-3 ${
+            owed.overdueCount > 0 ? 'border-red-300 bg-red-50 hover:bg-red-100' : 'border-gray-200 bg-white hover:border-brand-300'
+          }`}
+        >
+          <span className="text-sm font-medium text-gray-800">
+            {formatCurrency(owed.outstanding)} owed to you across {owed.openCount} open {owed.openCount === 1 ? 'invoice' : 'invoices'}
+          </span>
+          {owed.overdueCount > 0 && (
+            <span className="text-sm font-semibold text-red-700">
+              {formatCurrency(owed.overdue)} overdue ({owed.overdueCount}) →
+            </span>
+          )}
+        </Link>
+      )}
 
       {alertCount > 0 && (
         <Link

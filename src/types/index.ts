@@ -243,11 +243,39 @@ export interface Invoice {
   id: string
   organization_id: string
   order_id: string
+  invoice_number: string
   status: InvoiceStatus
   external_ref: string | null
   total_amount: number
+  issue_date: string | null
+  due_date: string | null
+  sent_at: string | null
+  paid_at: string | null
   created_at: string
   updated_at: string
+}
+
+export type PaymentMethod = 'cheque' | 'eft' | 'cash' | 'card' | 'other'
+
+export interface InvoicePayment {
+  id: string
+  organization_id: string
+  invoice_id: string
+  amount: number
+  paid_on: string
+  method: PaymentMethod
+  reference: string | null
+  recorded_by: string | null
+  created_at: string
+}
+
+export interface InvoiceBalance {
+  invoice_id: string
+  organization_id: string
+  total_amount: number
+  amount_paid: number
+  balance: number
+  is_overdue: boolean
 }
 
 export interface InvoiceLine {
