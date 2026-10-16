@@ -9,6 +9,7 @@ import type { Customer, CustomerType } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Input, Label, Select } from '@/components/ui/Input'
 import { toast } from 'sonner'
+import { afterCustomerCreatedPath } from '@/lib/new-customer-return'
 
 export function CustomerForm({ customer }: { customer?: Customer }) {
   const router = useRouter()
@@ -39,17 +40,20 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
       if (customer) {
         const { error } = await supabase.from('customers').update(payload).eq('id', customer.id)
         if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from('customers')
-          .insert({ ...payload, organization_id: organization?.id })
-        if (error) throw error
+        return customer.id
       }
+      const { data, error } = await supabase
+        .from('customers')
+        .insert({ ...payload, organization_id: organization?.id })
+        .select('id')
+        .single()
+      if (error) throw error
+      return data.id as string
     },
-    onSuccess: () => {
+    onSuccess: (customerId) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       toast.success(customer ? 'Customer updated' : 'Customer created')
-      router.push('/dashboard/customers')
+      router.push(customer ? '/dashboard/customers' : afterCustomerCreatedPath(window.location.search, customerId))
       router.refresh()
     },
     onError: (err: Error) => toast.error(err.message),

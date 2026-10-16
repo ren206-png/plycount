@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
@@ -11,6 +12,7 @@ import { Input, Label, Select } from '@/components/ui/Input'
 import { formatCurrency, formatPercent, cn } from '@/lib/utils'
 import { resolvePriceBookId, resolveUnitPrice, getLatestCostInput, totalUnitCost, marginPct } from '@/lib/pricing/resolve'
 import { toast } from 'sonner'
+import { customerFromSearch, newCustomerFromQuoteHref } from '@/lib/new-customer-return'
 
 interface DraftLine {
   key: string
@@ -166,12 +168,28 @@ export default function NewQuotePage() {
     onError: (err: Error) => toast.error(err.message),
   })
 
+  // Coming back from "New customer": select the customer that was just created.
+  useEffect(() => {
+    const id = customerFromSearch(window.location.search)
+    // One-time read of the URL on mount, the same as picking the customer by hand.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (id) void handleCustomerChange(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <div className="max-w-4xl">
       <h1 className="mb-6 text-2xl font-bold text-gray-900">New quote</h1>
 
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
-        <Label>Customer</Label>
+        <div className="flex items-center justify-between">
+          <Label>Customer</Label>
+          {isOrgAdmin && (
+            <Link href={newCustomerFromQuoteHref()} className="text-sm font-medium text-brand-600 hover:underline">
+              + New customer
+            </Link>
+          )}
+        </div>
         <Select value={customerId} onChange={(e) => handleCustomerChange(e.target.value)}>
           <option value="">Select customer…</option>
           {customers?.map((c) => (
