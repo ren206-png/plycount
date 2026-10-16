@@ -101,6 +101,9 @@ export default function ProductionLossesPage() {
   })
 
   const skuFor = (id: string) => products?.find((p) => p.id === id)?.sku_code ?? id
+  // A platform admin can read every organization's products; a loss can only be
+  // logged against a product of the organization it is recorded for.
+  const ownProducts = (products ?? []).filter((p) => p.organization_id === organization?.id)
   const summary = summarizeLosses(losses ?? [], costs ?? [], daysBefore(today, 30))
   const qtyNumber = Number(qty)
   const canSubmit = !!productId && Number.isInteger(qtyNumber) && qtyNumber > 0 && !addMutation.isPending
@@ -147,10 +150,13 @@ export default function ProductionLossesPage() {
           <Label>Product</Label>
           <Select value={productId} onChange={(e) => setProductId(e.target.value)}>
             <option value="">Select SKU…</option>
-            {products?.map((p) => (
+            {ownProducts.map((p) => (
               <option key={p.id} value={p.id}>{p.sku_code} — {p.name}</option>
             ))}
           </Select>
+          {products && ownProducts.length === 0 && (
+            <p className="mt-1 text-sm text-amber-600">Add a product under Products (SKUs) first.</p>
+          )}
         </div>
         <div>
           <Label>Quantity</Label>
