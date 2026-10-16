@@ -20,6 +20,7 @@ import {
   toJsonLdString,
 } from '@/lib/landing'
 import { SITE_NAME, SITE_URL } from '@/lib/site'
+import { Logo } from '@/components/brand/Logo'
 
 // Next.js does not apply the root layout's title template to the page in the same
 // folder, so the brand suffix is added explicitly (57 characters in total).
@@ -278,9 +279,8 @@ export default function HomePage() {
 
       <header className="relative z-20">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-6">
-          <Link href="/" className={`text-lg font-semibold tracking-tight text-white ${FOCUS} rounded`}>
-            <span className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-amber-300" aria-hidden="true" />
-            {SITE_NAME}
+          <Link href="/" aria-label={`${SITE_NAME} home`} className={`rounded-lg ${FOCUS}`}>
+            <Logo uid="hdr" size={34} tone="dark" />
           </Link>
           <nav aria-label="Main" className="hidden items-center gap-8 text-sm text-gray-300 md:flex">
             <a href="#features" className="hover:text-white">Features</a>
@@ -506,7 +506,10 @@ export default function HomePage() {
 
       <footer className="relative z-10 border-t border-white/5">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-sm text-gray-500 sm:flex-row sm:px-6">
-          <p>&copy; {new Date().getFullYear()} {SITE_NAME}. Contract pricing and margin software for paper converters.</p>
+          <div className="flex flex-col items-center gap-3 sm:flex-row">
+            <Logo uid="ftr" size={26} tone="dark" />
+            <p>&copy; {new Date().getFullYear()} {SITE_NAME}. Contract pricing and margin software for paper converters.</p>
+          </div>
           <nav aria-label="Footer" className="flex gap-5">
             <Link href="/login" className="hover:text-gray-200">Sign in</Link>
             <Link href="/staff/join" className="hover:text-gray-200">Request staff access</Link>

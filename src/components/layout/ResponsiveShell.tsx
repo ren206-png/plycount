@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils'
 interface Props {
   /** Short name shown in the top bar on phones. */
   title: string
+  /** Small icon shown before the title in the top bar. */
+  titleIcon?: React.ReactNode
   /** Sidebar header block (name + subtitle). */
   brand: React.ReactNode
   /** Sidebar links. */
@@ -19,7 +21,7 @@ interface Props {
 // On a desktop screen: a fixed sidebar beside the page, as before. On a phone:
 // a top bar with a menu button, and the sidebar becomes a drawer that slides
 // over the page and closes on navigation, on tapping outside it, or on Escape.
-export function ResponsiveShell({ title, brand, nav, footer, children }: Props) {
+export function ResponsiveShell({ title, titleIcon, brand, nav, footer, children }: Props) {
   const pathname = usePathname()
   // The drawer is open only for the page it was opened on, so moving to another
   // page closes it without any extra bookkeeping.
@@ -50,6 +52,7 @@ export function ResponsiveShell({ title, brand, nav, footer, children }: Props) 
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
+        {titleIcon}
         <span className="text-base font-bold text-brand-700">{title}</span>
       </header>
 

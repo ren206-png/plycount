@@ -10,6 +10,8 @@ export function isPublicSeoPath(pathname: string): boolean {
     pathname === '/sitemap.xml' ||
     pathname === '/opengraph-image' ||
     pathname === '/twitter-image' ||
+    pathname === '/manifest.webmanifest' ||
+    pathname === '/apple-icon' ||
     pathname.startsWith('/opengraph-image/') ||
     pathname.startsWith('/twitter-image/')
   )

@@ -116,5 +116,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // robots.txt, sitemap.xml and the social images are public and skip the gate entirely.
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|opengraph-image|twitter-image).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|opengraph-image|twitter-image|apple-icon|manifest.webmanifest).*)'],
 }

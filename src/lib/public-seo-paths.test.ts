@@ -4,7 +4,7 @@ import { config } from '@/middleware'
 
 describe('isPublicSeoPath', () => {
   it('recognises the files crawlers and link previews fetch', () => {
-    for (const p of ['/robots.txt', '/sitemap.xml', '/opengraph-image', '/twitter-image']) {
+    for (const p of ['/robots.txt', '/sitemap.xml', '/opengraph-image', '/twitter-image', '/manifest.webmanifest', '/apple-icon']) {
       expect(isPublicSeoPath(p), p).toBe(true)
     }
   })
@@ -22,7 +22,7 @@ describe('middleware matcher', () => {
   const runs = (pathname: string) => new RegExp(`^${config.matcher[0]}$`).test(pathname)
 
   it('skips the public SEO files so they are never redirected to the login page', () => {
-    for (const p of ['/robots.txt', '/sitemap.xml', '/opengraph-image', '/twitter-image']) {
+    for (const p of ['/robots.txt', '/sitemap.xml', '/opengraph-image', '/twitter-image', '/manifest.webmanifest', '/apple-icon']) {
       expect(runs(p), p).toBe(false)
     }
   })
