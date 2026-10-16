@@ -129,8 +129,8 @@ select is((select count(*) from updated), 1::bigint, 'staff can still edit produ
 
 select is(public.resolve_unit_price('c2222222-2222-2222-2222-222222222222', 'a1111111-1111-1111-1111-111111111111', 5), 4.55::numeric, 'staff still resolve contract prices');
 
-with updated as (update public.user_profiles set role = 'administrator' where auth_user_id = 'a0000000-0000-0000-0000-00000000000b' returning id)
-select is((select count(*) from updated), 1::bigint, 'an org admin can still change a colleague''s role');
+with updated as (update public.user_profiles set status = 'suspended' where auth_user_id = 'a0000000-0000-0000-0000-00000000000b' returning id)
+select is((select count(*) from updated), 1::bigint, 'an org admin can still suspend a staff colleague');
 
 select throws_ok(
   $$update public.user_profiles set role = 'platform_admin' where auth_user_id = 'a0000000-0000-0000-0000-00000000000b'$$,

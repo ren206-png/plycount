@@ -30,7 +30,7 @@ export function describeRole(role: UserRole | null | undefined): string {
     case 'organization_owner':
       return 'New company signup'
     case 'administrator':
-      return 'Administrator'
+      return 'Manager'
     case 'platform_admin':
       return 'Platform administrator'
     case 'client_viewer':

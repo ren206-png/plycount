@@ -36,6 +36,7 @@ const ALL_NAV: NavItem[] = [
   { href: '/dashboard/production-losses', label: 'Damaged goods' },
   { href: '/dashboard/margin-alerts', label: 'Margin Alerts' },
   { href: '/dashboard/margin', label: 'Margin Dashboard' },
+  { href: '/dashboard/team', label: 'Team' },
   { href: '/dashboard/settings/billing', label: 'Billing' },
   { href: '/dashboard/settings/integrations', label: 'Integrations' },
 ]
@@ -53,6 +54,7 @@ const STAFF_HREFS = new Set([
 const ADMIN_ONLY_PREFIXES = [
   '/dashboard/cost-inputs',
   '/dashboard/invoices',
+  '/dashboard/team',
   '/dashboard/import',
   '/dashboard/production-losses',
   '/dashboard/margin-alerts',
