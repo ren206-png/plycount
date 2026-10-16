@@ -25,7 +25,7 @@ export default function CustomersPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
           <p className="text-sm text-gray-500">Distributors, institutions, and wholesalers you sell to.</p>
@@ -37,7 +37,7 @@ export default function CustomersPage() {
         )}
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
             <tr>

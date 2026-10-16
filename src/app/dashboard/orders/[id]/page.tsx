@@ -250,7 +250,7 @@ export default function OrderDetailPage() {
 
   return (
     <div className="max-w-4xl">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900">Order for {customer?.name ?? '—'}</h1>
@@ -265,7 +265,7 @@ export default function OrderDetailPage() {
         </Link>
       </div>
 
-      <div className="mb-6 overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className="mb-6 overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
             <tr>
@@ -340,7 +340,7 @@ export default function OrderDetailPage() {
       )}
 
       {isOrgAdmin && (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <div className="border-b border-gray-200 px-4 py-3">
             <h2 className="font-semibold text-gray-900">Invoices</h2>
           </div>

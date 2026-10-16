@@ -65,7 +65,7 @@ export function ProductForm({ product }: { product?: Product }) {
       }}
       className="max-w-xl space-y-4 rounded-lg border border-gray-200 bg-white p-6"
     >
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <Label>SKU code</Label>
           <Input required value={skuCode} onChange={(e) => setSkuCode(e.target.value)} placeholder="e.g. TT2-96-STD" />
@@ -76,7 +76,7 @@ export function ProductForm({ product }: { product?: Product }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
           <Label>Ply</Label>
           <Input type="number" min={1} value={ply} onChange={(e) => setPly(e.target.value)} />
@@ -91,7 +91,7 @@ export function ProductForm({ product }: { product?: Product }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
           <Label>Sheet count</Label>
           <Input type="number" value={sheetCount} onChange={(e) => setSheetCount(e.target.value)} />

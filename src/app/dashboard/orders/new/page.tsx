@@ -57,7 +57,7 @@ export default function NewOrderPage() {
         </p>
       </div>
 
-      <div className="mb-6 overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className="mb-6 overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-4 py-3">
           <h2 className="font-semibold text-gray-900">Quotes ready to convert</h2>
         </div>

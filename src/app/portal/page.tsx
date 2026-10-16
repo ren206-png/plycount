@@ -59,7 +59,7 @@ export default function PortalHomePage() {
       <h1 className="text-2xl font-bold text-gray-900">Welcome{profile ? `, ${profile.full_name}` : ''}</h1>
       <p className="mt-1 text-sm text-gray-500">A read-only view of your quotes, orders, and invoices.</p>
 
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {cards.map((c) => (
           <Link
             key={c.href}

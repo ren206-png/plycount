@@ -109,7 +109,7 @@ export default function MarginDashboardPage() {
         </p>
       </div>
 
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Total revenue</p>
           <p className="mt-1 text-xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
@@ -126,8 +126,8 @@ export default function MarginDashboardPage() {
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-6">
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <div className="border-b border-gray-200 px-4 py-3">
             <h2 className="font-semibold text-gray-900">Margin by SKU</h2>
           </div>
@@ -160,7 +160,7 @@ export default function MarginDashboardPage() {
           </table>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <div className="border-b border-gray-200 px-4 py-3">
             <h2 className="font-semibold text-gray-900">Margin by customer</h2>
           </div>
