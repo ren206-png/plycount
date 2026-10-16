@@ -208,7 +208,7 @@ export default function NewQuotePage() {
       </div>
 
       {customerId && (
-        <div className="mb-6 grid grid-cols-4 items-end gap-3 rounded-lg border border-gray-200 bg-white p-4">
+        <div className="mb-6 grid grid-cols-2 items-end gap-3 sm:grid-cols-4 rounded-lg border border-gray-200 bg-white p-4">
           <div className="col-span-2">
             <Label>Product</Label>
             <Select value={productId} onChange={(e) => setProductId(e.target.value)}>
@@ -229,7 +229,7 @@ export default function NewQuotePage() {
       )}
 
       {lines.length > 0 && (
-        <div className="mb-6 overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="mb-6 overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
               <tr>

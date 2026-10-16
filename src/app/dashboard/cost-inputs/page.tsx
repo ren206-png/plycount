@@ -108,7 +108,7 @@ export default function CostInputsPage() {
           e.preventDefault()
           mutation.mutate()
         }}
-        className="mb-8 grid max-w-3xl grid-cols-6 gap-3 rounded-lg border border-gray-200 bg-white p-4 items-end"
+        className="mb-8 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-6 rounded-lg border border-gray-200 bg-white p-4 items-end"
       >
         <div className="col-span-2">
           <Label>Product</Label>
@@ -135,7 +135,7 @@ export default function CostInputsPage() {
           <Label>Freight/unit</Label>
           <Input type="number" step="0.0001" value={freight} onChange={(e) => setFreight(e.target.value)} />
         </div>
-        <div className="col-span-5">
+        <div className="col-span-2 sm:col-span-5">
           <Label>Effective date</Label>
           <Input type="date" required value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} />
           {effectiveDate > today && (
@@ -150,7 +150,7 @@ export default function CostInputsPage() {
         </Button>
       </form>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
             <tr>

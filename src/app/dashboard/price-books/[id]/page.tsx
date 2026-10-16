@@ -123,7 +123,7 @@ export default function PriceBookDetailPage() {
             e.preventDefault()
             addLine.mutate()
           }}
-          className="mb-8 grid max-w-3xl grid-cols-5 items-end gap-3 rounded-lg border border-gray-200 bg-white p-4"
+          className="mb-8 grid max-w-3xl grid-cols-2 items-end gap-3 sm:grid-cols-5 rounded-lg border border-gray-200 bg-white p-4"
         >
           <div className="col-span-2">
             <Label>Product</Label>
@@ -146,7 +146,7 @@ export default function PriceBookDetailPage() {
             <Label>Max qty (optional)</Label>
             <Input type="number" value={maxQty} onChange={(e) => setMaxQty(e.target.value)} />
           </div>
-          <div className="col-span-5">
+          <div className="col-span-2 sm:col-span-5">
             <Button type="submit" disabled={addLine.isPending || !productId}>
               {addLine.isPending ? 'Adding…' : 'Add tier'}
             </Button>
@@ -154,7 +154,7 @@ export default function PriceBookDetailPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
             <tr>

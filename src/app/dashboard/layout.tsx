@@ -9,6 +9,7 @@ import { hasAccess } from '@/lib/auth/approval'
 import { APPROVALS_HREF, buildNav, canAccessPath } from '@/lib/nav'
 import { createClient } from '@/lib/supabase/client'
 import { useQuery } from '@tanstack/react-query'
+import { ResponsiveShell } from '@/components/layout/ResponsiveShell'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -50,37 +51,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (isClientViewer) return null
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="flex w-64 shrink-0 flex-col border-r border-gray-200 bg-white">
-        <div className="border-b border-gray-200 px-5 py-4">
+    <ResponsiveShell
+      title="PlyCount"
+      brand={
+        <>
           <p className="text-lg font-bold text-brand-700">PlyCount</p>
           <p className="truncate text-xs text-gray-500">
             {isLoading ? 'Loading…' : organization?.name ?? 'No organization'}
           </p>
-        </div>
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {buildNav(flags).map((item) => {
-            const active = pathname === item.href
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium',
-                  active ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:bg-gray-100'
-                )}
-              >
-                <span>{item.label}</span>
-                {item.href === APPROVALS_HREF && (pendingCount ?? 0) > 0 && (
-                  <span className="ml-2 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white">
-                    {pendingCount}
-                  </span>
-                )}
-              </Link>
-            )
-          })}
-        </nav>
-        <div className="border-t border-gray-200 px-5 py-4">
+        </>
+      }
+      nav={buildNav(flags).map((item) => {
+        const active = pathname === item.href
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              'flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium',
+              active ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:bg-gray-100'
+            )}
+          >
+            <span>{item.label}</span>
+            {item.href === APPROVALS_HREF && (pendingCount ?? 0) > 0 && (
+              <span className="ml-2 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white">
+                {pendingCount}
+              </span>
+            )}
+          </Link>
+        )
+      })}
+      footer={
+        <>
           <p className="truncate text-sm font-medium text-gray-900">{profile?.full_name}</p>
           <p className="truncate text-xs text-gray-500">{profile?.role}</p>
           <button
@@ -90,23 +92,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           >
             {isSigningOut ? 'Signing out…' : 'Sign out'}
           </button>
+        </>
+      }
+    >
+      {!isLoading && profile && !canAccessPath(pathname, flags) ? (
+        <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-6 text-center">
+          <h1 className="text-lg font-semibold text-gray-900">No access to this page</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Your account does not have permission to use this part of PlyCount. Ask the administrator if you need it.
+          </p>
+          <Link href="/dashboard" className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline">
+            Back to the dashboard
+          </Link>
         </div>
-      </aside>
-      <main className="flex-1 overflow-y-auto bg-gray-50 p-8">
-        {!isLoading && profile && !canAccessPath(pathname, flags) ? (
-          <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-6 text-center">
-            <h1 className="text-lg font-semibold text-gray-900">No access to this page</h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Your account does not have permission to use this part of PlyCount. Ask the administrator if you need it.
-            </p>
-            <Link href="/dashboard" className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline">
-              Back to the dashboard
-            </Link>
-          </div>
-        ) : (
-          children
-        )}
-      </main>
-    </div>
+      ) : (
+        children
+      )}
+    </ResponsiveShell>
   )
 }

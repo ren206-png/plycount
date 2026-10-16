@@ -89,7 +89,7 @@ export default function NewPriceBookPage() {
             This is a negotiated contract price (vs. a general volume/list book)
           </label>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>Effective start</Label>
             <Input type="date" required value={effectiveStart} onChange={(e) => setEffectiveStart(e.target.value)} />

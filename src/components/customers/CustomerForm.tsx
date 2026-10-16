@@ -80,7 +80,7 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
           <option value="other">Other</option>
         </Select>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <Label>Contact name</Label>
           <Input value={contactName} onChange={(e) => setContactName(e.target.value)} />
