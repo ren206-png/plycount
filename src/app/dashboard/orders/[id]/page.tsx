@@ -83,11 +83,15 @@ export default function OrderDetailPage() {
 
   const { data: invoiceLines } = useQuery({
     queryKey: ['invoice-lines', params.id],
-    enabled: !!invoices,
+    enabled: isValidId,
     queryFn: async () => {
-      const ids = (invoices ?? []).map((i) => i.id)
-      if (ids.length === 0) return [] as InvoiceLine[]
-      const { data, error } = await supabase.from('invoice_lines').select('*').in('invoice_id', ids)
+      // Filter through the invoice's order rather than a list of invoice ids
+      // captured earlier: a refetch right after creating an invoice would
+      // otherwise miss the new invoice and show 0 invoiced until a reload.
+      const { data, error } = await supabase
+        .from('invoice_lines')
+        .select('*, invoices!inner(order_id)')
+        .eq('invoices.order_id', params.id)
       if (error) throw error
       return data as InvoiceLine[]
     },
@@ -204,10 +208,14 @@ export default function OrderDetailPage() {
 
       return invoice
     },
-    onSuccess: (invoice) => {
+    onSuccess: async (invoice) => {
       toast.success('Draft invoice created')
-      queryClient.invalidateQueries({ queryKey: ['invoices', params.id] })
-      queryClient.invalidateQueries({ queryKey: ['invoice-lines', params.id] })
+      // Wait for the refresh so the button stays disabled until the invoiced
+      // quantity is up to date; clicking again before that would bill it twice.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['invoices', params.id] }),
+        queryClient.invalidateQueries({ queryKey: ['invoice-lines', params.id] }),
+      ])
       // Push to whichever accounting provider is connected immediately —
       // the "sync on creation" flow. Failure here isn't fatal to invoice
       // creation itself; the invoice still exists and can be retried with
