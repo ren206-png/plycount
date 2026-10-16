@@ -206,6 +206,17 @@ export default function OrderDetailPage() {
       )
       if (linesError) throw linesError
 
+      // Once every ordered unit has been invoiced the order is done: move it to
+      // 'invoiced'. The invoice already exists at this point, so a failure here
+      // warns instead of failing the whole action.
+      const fullyInvoiced = lines.every(
+        (l) => invoicedQtyFor(l.id) + (toInvoice.find((x) => x.line.id === l.id)?.remaining ?? 0) >= l.qty
+      )
+      if (fullyInvoiced) {
+        const { error: statusError } = await supabase.from('orders').update({ status: 'invoiced' }).eq('id', params.id)
+        if (statusError) toast.warning(`Invoice created, but the order status was not updated: ${statusError.message}`)
+      }
+
       return invoice
     },
     onSuccess: async (invoice) => {
@@ -215,6 +226,7 @@ export default function OrderDetailPage() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['invoices', params.id] }),
         queryClient.invalidateQueries({ queryKey: ['invoice-lines', params.id] }),
+        queryClient.invalidateQueries({ queryKey: ['orders', params.id] }),
       ])
       // Push to whichever accounting provider is connected immediately —
       // the "sync on creation" flow. Failure here isn't fatal to invoice
