@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/providers/AuthProvider'
@@ -101,6 +102,12 @@ export default function CostInputsPage() {
       <p className="mb-6 text-sm text-gray-500">
         Manually entered unit cost per SKU. There is no BOM/manufacturing costing engine at MVP —
         margin numbers are only as good as the latest entry here, which is why stale entries are flagged below.
+      </p>
+      <p className="-mt-3 mb-6 text-sm">
+        Many SKUs?{' '}
+        <Link href="/dashboard/import?type=costs" className="font-medium text-brand-600 hover:underline">
+          Import costs from a spreadsheet
+        </Link>
       </p>
 
       <form

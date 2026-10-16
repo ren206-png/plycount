@@ -30,9 +30,14 @@ export default function ProductsPage() {
           </p>
         </div>
         {isOrgAdmin && (
-          <Link href="/dashboard/products/new">
-            <Button>New SKU</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/dashboard/import?type=products">
+              <Button variant="secondary">Import from spreadsheet</Button>
+            </Link>
+            <Link href="/dashboard/products/new">
+              <Button>New SKU</Button>
+            </Link>
+          </div>
         )}
       </div>
 
