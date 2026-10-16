@@ -162,9 +162,10 @@ function ImportForm() {
         <p className="mt-1 text-sm text-gray-600">
           {kind === 'products' ? (
             <>
-              One row per SKU. Required columns: <code className="rounded bg-gray-100 px-1">sku_code</code> and{' '}
-              <code className="rounded bg-gray-100 px-1">name</code>. Optional: ply, gsm, roll_length_ft, sheet_count,
-              case_pack_qty, unit_of_measure (each, roll, case or pallet; blank means case).
+              One row per SKU. Required column: <code className="rounded bg-gray-100 px-1">name</code>. Optional:{' '}
+              <code className="rounded bg-gray-100 px-1">sku_code</code> (leave it blank and PlyCount makes one, like
+              BT2-96-001), ply, gsm, roll_length_ft, sheet_count, case_pack_qty, unit_of_measure (each, roll, case or
+              pallet; blank means case).
             </>
           ) : (
             <>
@@ -285,6 +286,7 @@ function ImportForm() {
                         return `${formatCurrency(d.raw_material_cost + d.packaging_cost + d.labor_cost + d.freight_cost_per_unit)} per unit from ${d.effective_date}`
                       })()}
                       {r.message}
+                      {r.note && <span className="block text-gray-500">{r.note}</span>}
                       {r.warning && <span className="block text-amber-600">{r.warning}</span>}
                     </td>
                   </tr>
