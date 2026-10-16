@@ -17,6 +17,7 @@ describe('buildNav', () => {
     expect(nav.some((i) => i.href === APPROVALS_HREF)).toBe(false)
     expect(nav.map((i) => i.label)).toContain('Cost Inputs')
     expect(nav.map((i) => i.label)).toContain('Billing')
+    expect(nav.map((i) => i.label)).toContain('Damaged goods')
   })
 
   it('gives staff only the sales basics', () => {
@@ -52,6 +53,7 @@ describe('canAccessPath', () => {
   it('keeps staff out of costs, margins, settings and edit forms', () => {
     for (const p of [
       '/dashboard/cost-inputs',
+      '/dashboard/production-losses',
       '/dashboard/margin',
       '/dashboard/margin-alerts',
       '/dashboard/settings/billing',

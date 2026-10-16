@@ -98,6 +98,29 @@ export interface CostInput {
   created_at: string
 }
 
+export type LossStage = 'converting' | 'packaging' | 'warehouse' | 'shipping' | 'other'
+export type LossReason =
+  | 'machine_jam'
+  | 'material_defect'
+  | 'operator_error'
+  | 'moisture_damage'
+  | 'handling_damage'
+  | 'quality_reject'
+  | 'other'
+
+export interface ProductionLoss {
+  id: string
+  organization_id: string
+  product_id: string
+  qty: number
+  stage: LossStage
+  reason: LossReason
+  occurred_on: string
+  notes: string | null
+  recorded_by: string | null
+  created_at: string
+}
+
 export interface PriceBook {
   id: string
   organization_id: string
