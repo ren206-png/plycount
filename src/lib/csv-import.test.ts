@@ -100,7 +100,7 @@ describe('parseProducts', () => {
     const r = parseProducts('sku_code,name,ply,gsm,sheet_count,unit_of_measure\n,Soft,0,abc,1.5,bucket', [])
     expect(r.rows[0]).toMatchObject({ line: 2, status: 'error' })
     const msg = r.rows[0].message ?? ''
-    for (const part of ['sku_code is empty', 'ply must be at least 1', 'gsm must be a number', 'sheet_count must be a whole number', 'unit_of_measure']) {
+    for (const part of ['ply must be at least 1', 'gsm must be a number', 'sheet_count must be a whole number', 'unit_of_measure']) {
       expect(msg).toContain(part)
     }
   })
@@ -117,10 +117,38 @@ describe('parseProducts', () => {
   })
 
   it('refuses a file without the required columns or with too many rows', () => {
-    expect(parseProducts('name\nSoft', []).fatal).toMatch(/sku_code and name/)
+    expect(parseProducts('sku_code\nA1', []).fatal).toMatch(/include name/)
     expect(parseProducts('', []).fatal).toMatch(/Nothing to import/)
     const big = 'sku_code,name\n' + Array.from({ length: MAX_IMPORT_ROWS + 1 }, (_, i) => `S${i},N${i}`).join('\n')
     expect(parseProducts(big, []).fatal).toMatch(/more than/)
+  })
+})
+
+describe('parseProducts: automatic SKU codes', () => {
+  it('makes a code for a blank one, from the name, ply and case pack', () => {
+    const r = parseProducts('sku_code,name,ply,case_pack_qty\n,2-Ply Standard Bath Tissue,2,96\n,Hardwound Paper Towel,1,6', [])
+    expect(r.rows.map((x) => x.data?.sku_code)).toEqual(['BT2-96-001', 'PT1-6-001'])
+    expect(r.rows[0].note).toMatch(/made up/)
+    expect(summarize(r).canImport).toBe(true)
+  })
+
+  it('works when there is no sku_code column at all', () => {
+    const r = parseProducts('name,ply,case_pack_qty\nBath tissue,2,96\nBath tissue premium,2,96', [])
+    expect(r.fatal).toBeUndefined()
+    expect(r.rows.map((x) => x.data?.sku_code)).toEqual(['BT2-96-001', 'BT2-96-002'])
+  })
+
+  it('keeps clear of existing products and of codes typed elsewhere in the file', () => {
+    const r = parseProducts('sku_code,name,ply,case_pack_qty\n,Bath tissue,2,96\nBT2-96-002,Bath tissue deluxe,2,96', ['BT2-96-001'])
+    expect(r.rows[0].data?.sku_code).toBe('BT2-96-003')
+    expect(r.rows[1].data?.sku_code).toBe('BT2-96-002')
+  })
+
+  it('leaves a code the person typed alone, and does not make one for a row with problems', () => {
+    const r = parseProducts('sku_code,name,ply\nMY-CODE,Soft,2\n,Rough,abc', [])
+    expect(r.rows[0].data?.sku_code).toBe('MY-CODE')
+    expect(r.rows[0].note).toBeUndefined()
+    expect(r.rows[1].status).toBe('error')
   })
 })
 
@@ -180,7 +208,7 @@ describe('summarize', () => {
     const clean = summarize(parseProducts('sku_code,name\nA1,One\nB2,Two', ['B2']))
     expect(clean).toMatchObject({ ok: 1, skipped: 1, errors: 0, canImport: true })
 
-    const bad = summarize(parseProducts('sku_code,name\nA1,One\n,Two', []))
+    const bad = summarize(parseProducts('sku_code,name\nA1,One\nA2,', []))
     expect(bad).toMatchObject({ ok: 1, errors: 1, canImport: false })
 
     const nothingNew = summarize(parseProducts('sku_code,name\nA1,One', ['A1']))

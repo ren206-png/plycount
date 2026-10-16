@@ -13,6 +13,7 @@
 //   * a cost row must name a SKU that already exists in your company
 // ============================================================
 import type { UnitOfMeasure } from '@/types'
+import { generateSku, inferProductType } from '@/lib/sku'
 
 export const MAX_IMPORT_ROWS = 1000
 
@@ -26,6 +27,8 @@ export interface RowResult<T> {
   status: RowStatus
   message?: string
   warning?: string
+  /** Something worth knowing about an accepted row, e.g. that its SKU was made up for it. */
+  note?: string
   data?: T
 }
 
@@ -152,11 +155,11 @@ export function parseProducts(text: string, existingSkus: Iterable<string>): Imp
   if (table.length === 0) return { rows: [], ignoredColumns: [], fatal: 'Nothing to import yet. Paste your rows or choose a file.' }
 
   const { columns, ignored } = mapHeaders(table[0], PRODUCT_ALIASES)
-  if (!columns.has('sku_code') || !columns.has('name')) {
+  if (!columns.has('name')) {
     return {
       rows: [],
       ignoredColumns: ignored,
-      fatal: 'The first row must be column headings that include sku_code and name. Download the template to see the layout.',
+      fatal: 'The first row must be column headings that include name (sku_code is optional: PlyCount makes one when it is blank). Download the template to see the layout.',
     }
   }
   if (table.length - 1 > MAX_IMPORT_ROWS) {
@@ -167,14 +170,22 @@ export function parseProducts(text: string, existingSkus: Iterable<string>): Imp
   const seen = new Map<string, number>() // sku -> first line
   const rows: RowResult<ProductImportRow>[] = []
 
+  // Codes made up for blank rows must not collide with an existing product, a code
+  // typed anywhere in this file (even further down), or each other.
+  const taken = new Set(existing)
+  for (const cells of table.slice(1)) {
+    const typed = cellAt(cells, columns, 'sku_code')
+    if (typed) taken.add(skuKey(typed))
+  }
+
   table.slice(1).forEach((cells, idx) => {
     const line = idx + 2
-    const sku = cellAt(cells, columns, 'sku_code')
+    let sku = cellAt(cells, columns, 'sku_code')
     const name = cellAt(cells, columns, 'name')
     const problems: string[] = []
+    let generated = false
 
-    if (!sku) problems.push('sku_code is empty')
-    else if (sku.length > 64) problems.push('sku_code is longer than 64 characters')
+    if (sku.length > 64) problems.push('sku_code is longer than 64 characters')
     if (!name) problems.push('name is empty')
     else if (name.length > 200) problems.push('name is longer than 200 characters')
 
@@ -205,6 +216,13 @@ export function parseProducts(text: string, existingSkus: Iterable<string>): Imp
       else problems.push(`unit_of_measure "${uomRaw}" is not each, roll, case or pallet`)
     }
 
+    // A blank code is made up, once the rest of the row is known to be usable.
+    if (!sku && name && problems.length === 0) {
+      sku = generateSku({ type: inferProductType(name), ply, packQty: casePack }, taken)
+      taken.add(skuKey(sku))
+      generated = true
+    }
+
     const label = sku || `line ${line}`
     if (sku) {
       const k = skuKey(sku)
@@ -225,6 +243,7 @@ export function parseProducts(text: string, existingSkus: Iterable<string>): Imp
       line,
       label,
       status: 'ok',
+      note: generated ? 'SKU code made up for this row' : undefined,
       data: { sku_code: sku, name, ply, gsm, roll_length_ft: roll, sheet_count: sheets, case_pack_qty: casePack, unit_of_measure: uom },
     })
   })
