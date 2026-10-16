@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { TurnstileWidget } from '@/components/TurnstileWidget'
 import { captchaOptions, captchaRequired } from '@/lib/turnstile'
+import { AUTH_BUTTON, AUTH_BUTTON_GLASS, AUTH_INPUT, AUTH_LABEL, AUTH_LINK, AuthShell } from '@/components/auth/AuthShell'
 
 function slugify(name: string) {
   return name
@@ -89,66 +90,40 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-12">
-      <h1 className="mb-1 text-2xl font-bold text-gray-900">Start your pilot</h1>
-      <p className="mb-6 text-sm text-gray-600">
-        Set up your company and the first admin account.
-      </p>
+    <AuthShell
+      title="Start your pilot"
+      subtitle="Set up your company and the first admin account."
+      footer={
+        <>
+          Already have an account?{' '}
+          <Link href="/login" className={AUTH_LINK}>
+            Sign in
+          </Link>
+        </>
+      }
+    >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Company name</label>
-          <input
-            required
-            value={orgName}
-            onChange={(e) => setOrgName(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          />
+          <label className={AUTH_LABEL}>Company name</label>
+          <input required autoComplete="organization" value={orgName} onChange={(e) => setOrgName(e.target.value)} className={AUTH_INPUT} />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Your full name</label>
-          <input
-            required
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          />
+          <label className={AUTH_LABEL}>Your full name</label>
+          <input required autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} className={AUTH_INPUT} />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          />
+          <label className={AUTH_LABEL}>Email</label>
+          <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={AUTH_INPUT} />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Password</label>
-          <input
-            type="password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          />
+          <label className={AUTH_LABEL}>Password</label>
+          <input type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className={AUTH_INPUT} />
         </div>
         <TurnstileWidget onToken={setCaptchaToken} resetSignal={captchaReset} />
-        <button
-          type="submit"
-          disabled={isSubmitting || !captchaReady}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
-        >
+        <button type="submit" disabled={isSubmitting || !captchaReady} className={AUTH_BUTTON}>
           {isSubmitting ? 'Creating account…' : 'Create account'}
         </button>
       </form>
-      <p className="mt-4 text-sm text-gray-600">
-        Already have an account?{' '}
-        <Link href="/login" className="font-medium text-brand-600 hover:underline">
-          Sign in
-        </Link>
-      </p>
-    </main>
+    </AuthShell>
   )
 }

@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/Button'
-import { Input, Label } from '@/components/ui/Input'
+import { AUTH_BUTTON, AUTH_INPUT, AUTH_LABEL, AuthShell } from '@/components/auth/AuthShell'
 import { toast } from 'sonner'
 
 export default function PortalSetPasswordPage() {
@@ -34,26 +33,16 @@ export default function PortalSetPasswordPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
-      <h1 className="mb-2 text-2xl font-bold text-gray-900">Set your password</h1>
-      <p className="mb-6 text-sm text-gray-500">
-        Choose a password to finish setting up your customer portal access.
-      </p>
+    <AuthShell title="Set your password" subtitle="Choose a password to finish setting up your customer portal access.">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <Label>New password</Label>
-          <Input
-            type="password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <label className={AUTH_LABEL}>New password</label>
+          <input type="password" required minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className={AUTH_INPUT} />
         </div>
-        <Button type="submit" disabled={isSubmitting}>
+        <button type="submit" disabled={isSubmitting} className={AUTH_BUTTON}>
           {isSubmitting ? 'Saving…' : 'Save password'}
-        </Button>
+        </button>
       </form>
-    </main>
+    </AuthShell>
   )
 }
