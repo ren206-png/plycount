@@ -20,6 +20,7 @@ describe('buildNav', () => {
     expect(nav.map((i) => i.label)).toContain('Damaged goods')
     expect(nav.map((i) => i.label)).toContain('Import data')
     expect(nav.map((i) => i.label)).toContain('Invoices')
+    expect(nav.map((i) => i.label)).toContain('Team')
   })
 
   it('gives staff only the sales basics', () => {
@@ -59,6 +60,7 @@ describe('canAccessPath', () => {
       '/dashboard/import',
       '/dashboard/invoices',
       '/dashboard/invoices/abc',
+      '/dashboard/team',
       '/dashboard/margin',
       '/dashboard/margin-alerts',
       '/dashboard/settings/billing',
