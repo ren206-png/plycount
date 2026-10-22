@@ -1,5 +1,6 @@
 // Sentry 11 moved the build-time wrapper to the `/config` subpath.
 import { withSentryConfig } from '@sentry/nextjs/config'
+import { contentSecurityPolicy, securityHeaders } from './src/lib/security-headers.mjs'
 
 /** @type {import('next').NextConfig} */
 // The app itself (dashboard, portal, login, API) is private: tell search engines
@@ -9,10 +10,28 @@ const PRIVATE_PATHS = ['/dashboard/:path*', '/portal/:path*', '/login', '/signup
 const nextConfig = {
   reactStrictMode: true,
   async headers() {
-    return PRIVATE_PATHS.map((source) => ({
-      source,
-      headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
-    }))
+    return [
+      // Browser protections on every response (framing, type sniffing, referrers, sensors).
+      { source: '/:path*', headers: securityHeaders() },
+      // The content security policy governs pages; API responses (JSON, PDFs) are left out.
+      {
+        source: '/((?!api/).*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: contentSecurityPolicy({
+              isProd: process.env.NODE_ENV === 'production',
+              supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+              sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+            }),
+          },
+        ],
+      },
+      ...PRIVATE_PATHS.map((source) => ({
+        source,
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      })),
+    ]
   },
 }
 
