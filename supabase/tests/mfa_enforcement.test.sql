@@ -21,9 +21,10 @@ insert into public.user_profiles (auth_user_id, organization_id, email, full_nam
   ('a0000000-0000-0000-0000-00000000000a', '11111111-1111-1111-1111-111111111111', 'secured@mfa.local', 'Secured', 'organization_owner', 'active'),
   ('b0000000-0000-0000-0000-00000000000b', '11111111-1111-1111-1111-111111111111', 'plain@mfa.local', 'Plain', 'administrator', 'active'),
   ('d0000000-0000-0000-0000-00000000000d', '11111111-1111-1111-1111-111111111111', 'half@mfa.local', 'Half', 'administrator', 'active');
-insert into auth.mfa_factors (user_id, factor_type, status) values
-  ('a0000000-0000-0000-0000-00000000000a', 'totp', 'verified'),
-  ('d0000000-0000-0000-0000-00000000000d', 'totp', 'unverified');
+-- (the real table has no defaults for id, created_at and updated_at)
+insert into auth.mfa_factors (id, user_id, factor_type, status, created_at, updated_at) values
+  (gen_random_uuid(), 'a0000000-0000-0000-0000-00000000000a', 'totp', 'verified', now(), now()),
+  (gen_random_uuid(), 'd0000000-0000-0000-0000-00000000000d', 'totp', 'unverified', now(), now());
 
 -- 1. password-only session of an account with two-step sign-in on
 set local role authenticated;
