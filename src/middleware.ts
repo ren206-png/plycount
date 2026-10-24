@@ -9,6 +9,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { hasAccess } from '@/lib/auth/approval'
+import { mfaLoginUrl, needsSecondStep } from '@/lib/auth/mfa'
 import { isPublicSeoPath } from '@/lib/public-seo-paths'
 
 const PUBLIC_ROUTES = [
@@ -62,6 +63,25 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const isApi = pathname.startsWith('/api/')
+
+  // Two-step sign-in. An account that turned it on must enter its authenticator
+  // code before anything else works: a password alone gets API calls a 401 and
+  // app pages a redirect to the code screen. (The database refuses such a
+  // session too, see migration 022; this keeps the app closed as well.) Reading
+  // the session's level is a local decode of the cookie, no extra network call.
+  if (user) {
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (needsSecondStep({ factors: user.factors, currentLevel: aal?.currentLevel })) {
+      if (isApi) {
+        if (API_GATE_EXEMPT.some((p) => pathname === p || pathname.startsWith(p + '/'))) return supabaseResponse
+        return NextResponse.json({ error: 'Enter your authenticator code to finish signing in.' }, { status: 401 })
+      }
+      const needsGate = pathname.startsWith('/dashboard') || pathname.startsWith('/portal') || pathname === '/pending'
+      if (needsGate) return NextResponse.redirect(new URL(mfaLoginUrl(pathname), request.url))
+      // Public pages (including /login, where the code is entered) stay reachable.
+      return supabaseResponse
+    }
+  }
 
   // Approval gate ("no approval, no access"). A signed-in account whose
   // profile is pending/suspended/deactivated gets nothing: API calls are

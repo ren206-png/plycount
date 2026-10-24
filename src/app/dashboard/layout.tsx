@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
 import { cn } from '@/lib/utils'
 import { hasAccess } from '@/lib/auth/approval'
+import { SECURITY_HREF, verifiedFactorCount } from '@/lib/auth/mfa'
 import { APPROVALS_HREF, buildNav, canAccessPath } from '@/lib/nav'
 import { createClient } from '@/lib/supabase/client'
 import { useQuery } from '@tanstack/react-query'
@@ -15,7 +16,7 @@ import { Logo, LogoMark } from '@/components/brand/Logo'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { profile, organization, signOut, isSigningOut, isLoading, isClientViewer, isPlatformAdmin, isOrgAdmin } = useAuth()
+  const { user, profile, organization, signOut, isSigningOut, isLoading, isClientViewer, isPlatformAdmin, isOrgAdmin } = useAuth()
   const flags = { isPlatformAdmin, isOrgAdmin }
 
   useEffect(() => {
@@ -50,6 +51,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   })
 
   if (isClientViewer) return null
+
+  // Owners and managers can see prices, costs and invoices, so nudge them to
+  // turn on two-step sign-in until they have.
+  const showMfaNudge = !isLoading && isOrgAdmin && !!user && verifiedFactorCount(user.factors) === 0 && pathname !== SECURITY_HREF
 
   return (
     <ResponsiveShell
@@ -108,7 +113,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
       ) : (
-        children
+        <>
+          {showMfaNudge && (
+            <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              Protect your account: add a code from your phone to your password.{' '}
+              <Link href={SECURITY_HREF} className="font-semibold underline">
+                Turn on two-step sign-in
+              </Link>
+            </div>
+          )}
+          {children}
+        </>
       )}
     </ResponsiveShell>
   )

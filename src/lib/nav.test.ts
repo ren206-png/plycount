@@ -31,6 +31,7 @@ describe('buildNav', () => {
       'Price Books',
       'Quotes',
       'Orders',
+      'Two-step sign-in',
     ])
   })
 })
@@ -48,6 +49,7 @@ describe('canAccessPath', () => {
       '/dashboard/quotes/abc',
       '/dashboard/orders',
       '/dashboard/orders/abc',
+      '/dashboard/settings/security',
     ]) {
       expect(canAccessPath(p, staff), p).toBe(true)
     }

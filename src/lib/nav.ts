@@ -11,6 +11,8 @@
 // staff limits (see migration 016); these rules just keep the app from
 // showing pages and buttons a staff login cannot use.
 // ============================================================
+import { SECURITY_HREF } from '@/lib/auth/mfa'
+
 export interface NavItem {
   href: string
   label: string
@@ -39,6 +41,7 @@ const ALL_NAV: NavItem[] = [
   { href: '/dashboard/team', label: 'Team' },
   { href: '/dashboard/settings/billing', label: 'Billing' },
   { href: '/dashboard/settings/integrations', label: 'Integrations' },
+  { href: SECURITY_HREF, label: 'Two-step sign-in' },
 ]
 
 const STAFF_HREFS = new Set([
@@ -48,6 +51,7 @@ const STAFF_HREFS = new Set([
   '/dashboard/price-books',
   '/dashboard/quotes',
   '/dashboard/orders',
+  SECURITY_HREF, // everyone may protect their own login
 ])
 
 // Pages (and everything under them) that only admins may open.
@@ -74,6 +78,7 @@ export function buildNav(flags: AccessFlags): NavItem[] {
 }
 
 export function canAccessPath(pathname: string, flags: AccessFlags): boolean {
+  if (pathname === SECURITY_HREF) return true
   if (pathname === APPROVALS_HREF || pathname.startsWith('/dashboard/admin')) return flags.isPlatformAdmin
   if (flags.isOrgAdmin) return true
   return !ADMIN_ONLY_PREFIXES.some((p) => pathname === p || pathname.startsWith(p.endsWith('/') ? p : p + '/'))
