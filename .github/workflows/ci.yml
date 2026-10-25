@@ -59,7 +59,8 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          # Node 22+: the Supabase client used to seed test data needs a built-in WebSocket.
+          node-version: 22
           cache: npm
 
       - run: npm ci
