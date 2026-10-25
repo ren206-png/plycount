@@ -204,9 +204,26 @@ now, but this **did surface two real bugs** that are now fixed:
 - The test file itself under-declared its plan (`plan(11)` for 12
   assertions) — fixed to `plan(12)`.
 
-This was a manual one-off, not wired into CI — run `supabase test db`
-yourself (or repeat the scratch-Postgres approach) before trusting this as
-an ongoing regression gate.
+Since 2026-10-25 the whole suite (211 assertions in 11 files) runs on the real
+`supabase start` stack, and CI runs it on every pull request (job
+"browser-tests" in `.github/workflows/ci.yml`).
+
+### Browser tests (Playwright)
+
+A real browser clicks through a production build of the app against a LOCAL
+Supabase, never the hosted project (`e2e/env.ts` carries Supabase's public
+local demo keys). They cover signing in and out, the security headers,
+two-step sign-in end to end (including that a password-only session sees no
+data), and the quote -> order -> invoice -> payment path.
+
+```bash
+supabase start        # own ports (545xx), see supabase/config.toml
+npx playwright install chromium   # once
+npm run e2e
+```
+
+Each test seeds its own company (`e2e/seed.ts`), so reruns need no cleaning.
+The app is built into `.next-e2e`, so your normal `.next` is left alone.
 
 ## Integration setup notes
 

@@ -48,3 +48,45 @@ jobs:
       - name: Dependency audit
         run: npm audit --audit-level=high
         continue-on-error: true
+
+  # Real database + real browser. Starts the local Supabase stack (migrations
+  # included), runs the database tests on it, then the Playwright click-through
+  # tests against a production build. Never touches the hosted project.
+  browser-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          # Node 22+: the Supabase client used to seed test data needs a built-in WebSocket.
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Database tests (pgTAP)
+        run: supabase test db
+
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests
+        run: npm run e2e
+
+      - name: Keep the report when something fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7

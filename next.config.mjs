@@ -9,6 +9,8 @@ const PRIVATE_PATHS = ['/dashboard/:path*', '/portal/:path*', '/login', '/signup
 
 const nextConfig = {
   reactStrictMode: true,
+  // The browser tests build into their own folder so they never overwrite a normal build.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   async headers() {
     return [
       // Browser protections on every response (framing, type sniffing, referrers, sensors).
