@@ -12,6 +12,7 @@ const NAV = [
   { href: '/portal/quotes', label: 'Quotes' },
   { href: '/portal/orders', label: 'Orders' },
   { href: '/portal/invoices', label: 'Invoices' },
+  { href: '/portal/security', label: 'Two-step sign-in' },
 ]
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
