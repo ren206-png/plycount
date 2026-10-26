@@ -69,7 +69,9 @@ export async function POST(req: NextRequest) {
 
   const ip = clientIp(req.headers)
   const withinIpLimit = await checkRateLimit(`contact:ip:${ip}`, 5, 3600)
-  const withinOverallLimit = await checkRateLimit('contact:all', 60, 3600)
+  // Only an address that is within its own limit counts toward the site-wide one;
+  // otherwise a single caller could use up everyone's allowance by being refused.
+  const withinOverallLimit = withinIpLimit && (await checkRateLimit('contact:all', 60, 3600))
   if (!withinIpLimit || !withinOverallLimit) {
     return NextResponse.json({ error: 'Too many messages just now. Please try again later.' }, { status: 429 })
   }
