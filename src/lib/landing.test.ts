@@ -88,8 +88,8 @@ describe('structured data', () => {
 })
 
 describe('crawler files', () => {
-  it('lists only the public landing page in the sitemap', () => {
-    expect(sitemap().map((e) => e.url)).toEqual([SITE_URL])
+  it('lists only the public pages in the sitemap (landing page and contact form)', () => {
+    expect(sitemap().map((e) => e.url)).toEqual([SITE_URL, `${SITE_URL}/contact`])
   })
 
   it('keeps crawlers out of the private app and points at the sitemap', () => {

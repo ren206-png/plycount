@@ -287,6 +287,7 @@ export default function HomePage() {
             <a href="#how-it-works" className="hover:text-white">How it works</a>
             <a href="#compare" className="hover:text-white">Compare</a>
             <a href="#faq" className="hover:text-white">FAQ</a>
+            <Link href="/contact" className="hover:text-white">Contact</Link>
           </nav>
           <Link href="/login" className={PILL_LIGHT}>Sign in</Link>
         </div>
@@ -498,6 +499,7 @@ export default function HomePage() {
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link href="/login" className={PILL_LIGHT}>Sign in</Link>
                 <Link href="/staff/join" className={PILL_GLASS}>Request staff access</Link>
+                <Link href="/contact" className={PILL_GLASS}>Contact us</Link>
               </div>
             </div>
           </div>
@@ -513,6 +515,7 @@ export default function HomePage() {
           <nav aria-label="Footer" className="flex gap-5">
             <Link href="/login" className="hover:text-gray-200">Sign in</Link>
             <Link href="/staff/join" className="hover:text-gray-200">Request staff access</Link>
+            <Link href="/contact" className="hover:text-gray-200">Contact us</Link>
           </nav>
         </div>
       </footer>

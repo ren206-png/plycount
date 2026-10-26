@@ -17,5 +17,6 @@ export const E2E_APP_ENV: Record<string, string> = {
   SUPABASE_SERVICE_ROLE_KEY: LOCAL_SERVICE_KEY,
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: '',
   NEXT_PUBLIC_SENTRY_DSN: '',
+  CONTACT_DRY_RUN: '1', // the contact form does everything except send the email
   NEXT_DIST_DIR: '.next-e2e',
 }

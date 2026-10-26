@@ -156,6 +156,10 @@ function LoginForm() {
           <Link href="/staff/join" className={AUTH_LINK}>
             Request access
           </Link>
+          {' · '}
+          <Link href="/contact" className={AUTH_LINK}>
+            Contact us
+          </Link>
         </>
       }
     >

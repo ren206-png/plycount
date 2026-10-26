@@ -16,6 +16,7 @@ const PUBLIC_ROUTES = [
   '/',
   '/login',
   '/signup',
+  '/contact',
   '/staff/join',
   '/forgot-password',
   '/reset-password',
@@ -25,7 +26,7 @@ const PUBLIC_ROUTES = [
 
 // Endpoints that must work without an approved session (uptime checks and
 // Stripe's server-to-server webhook, which has no user at all).
-const API_GATE_EXEMPT = ['/api/health', '/api/stripe/webhook', '/api/auth/signout']
+const API_GATE_EXEMPT = ['/api/health', '/api/stripe/webhook', '/api/auth/signout', '/api/contact']
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
