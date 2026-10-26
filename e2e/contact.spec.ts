@@ -80,6 +80,20 @@ test.describe('contact us', () => {
     expect(other.status()).toBe(200)
   })
 
+  test('refused messages do not use up the site-wide allowance', async ({ request }) => {
+    const overall = async () => {
+      const { data } = await adminClient().from('rate_limit_buckets').select('request_count').eq('key', 'contact:all')
+      return (data ?? []).reduce((sum, r) => sum + r.request_count, 0)
+    }
+    const before = await overall()
+    const ip = callerIp()
+    for (let i = 0; i < 15; i++) {
+      await request.post('/api/contact', { data: message, headers: { 'x-forwarded-for': ip } })
+    }
+    // 5 were accepted and counted; the other 10 were refused and must not have been
+    expect((await overall()) - before).toBe(5)
+  })
+
   test('oversized and malformed requests are refused', async ({ request }) => {
     const big = await request.post('/api/contact', { data: { ...message, message: 'x'.repeat(30_000) } })
     expect(big.status()).toBe(413)
